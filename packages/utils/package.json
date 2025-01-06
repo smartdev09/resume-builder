@@ -1,0 +1,33 @@
+{
+    "name": "utils",
+    "type": "module",
+    "scripts": {
+        "build": "tsc -noEmit"
+    },
+    "exports": {
+        "./getSession": "./src/getSession.ts",
+        "./prisma": "./src/prisma.ts",
+        "./types": "./src/types.ts",
+        "./utils": "./src/utils.ts",
+        "./validations": "./src/validations.ts",
+        "./auth": "./src/auth.ts"
+    },
+    "devDependencies": {
+        "@repo/eslint-config": "workspace:*",
+        "@repo/typescript-config": "workspace:*",
+        "@types/node": "^20",
+        "@types/react": "^19",
+        "typescript": "latest"
+    },
+    "dependencies": {
+        "@auth/prisma-adapter": "^2.7.4",
+        "@prisma/client": "^6.0.1",
+        "clsx": "^2.1.1",
+        "lucide-react": "^0.469.0",
+        "next-auth": "5.0.0-beta.25",
+        "prisma": "^6.1.0",
+        "react": "^19",
+        "tailwind-merge": "^2.6.0",
+        "zod": "^3.24.1"
+    }
+}

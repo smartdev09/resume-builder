@@ -14,11 +14,12 @@ export const config = [
   eslintConfigPrettier,
   ...tseslint.configs.recommended,
   {
+    extends: [
+      "airbnb",
+      "airbnb/hooks",
+    ],
     plugins: {
       turbo: turboPlugin,
-    },
-    rules: {
-      "turbo/no-undeclared-env-vars": "warn",
     },
   },
   {
@@ -30,3 +31,4 @@ export const config = [
     ignores: ["dist/**"],
   },
 ];
+
