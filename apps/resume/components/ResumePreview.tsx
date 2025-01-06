@@ -151,7 +151,7 @@ function WorkExperienceSection({resumeData} : ResumeSectionProps) {
                 >
                     Work experience
                 </p>
-                {workExperiencesNotEmpty.map((exp, index) => (
+                {workExperiencesNotEmpty && workExperiencesNotEmpty.map((exp, index) => (
                     <div key={index} className="break-inside-avoid space-y-1">
                         <div className="flex items-center justify-between text-sm font-semibold">
                             <span>{exp.position}</span>
@@ -192,7 +192,7 @@ function EducationSection({resumeData} : ResumeSectionProps) {
                 >
                     Education
                 </p>
-                {educationsNotEmpty.map((education, index) => (
+                {educationsNotEmpty && educationsNotEmpty.map((education, index) => (
                     <div key={index} className="break-inside-avoid space-y-1">
                         <div className="flex items-center justify-between text-sm font-semibold">
                             <span>{education.degree}</span>
@@ -227,7 +227,7 @@ function SkillsSection({resumeData} : ResumeSectionProps) {
             />
             <div className="break-inside-avoid space-y-3">
                 <p className="text-lg font-semibold">Skills</p>
-                    {skills.map((skill, index) => (
+                    {skills && skills.map((skill, index) => (
                         <Badge key={index} className="bg-black text-white rounded-md hover:bg-black">
                             {skill}
                         </Badge>

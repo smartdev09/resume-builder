@@ -90,7 +90,7 @@ export default function PersonalInfoForm({
                         )}
                     />
 
-                    {fields.map(({ name, label, type, placeholder }, index) => (
+                    {fields && fields.map(({ name, label, type, placeholder }, index) => (
                         <FormField
                             key={index}
                             control={form.control}

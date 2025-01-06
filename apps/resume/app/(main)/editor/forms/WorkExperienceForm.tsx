@@ -82,7 +82,7 @@ export default function WorkExperienceForm({
                             items={fields} 
                             strategy={verticalListSortingStrategy}
                         >
-                            {fields.map((field, index) => (
+                            {fields && fields.map((field, index) => (
                                 <WorkExperienceItem 
                                     id={field.id}
                                     key={field.id}

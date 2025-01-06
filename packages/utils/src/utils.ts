@@ -29,7 +29,7 @@ export function mapToResumeValues(data: ResumeServerData) {
       city: data.city || undefined,
       country: data.country || undefined,
       email: data.email || undefined,
-      workExperiences: data.WorkExperience.map(exp => (
+      workExperiences: data.WorkExperience && data.WorkExperience.map(exp => (
         {
           position: exp.position || undefined,
           company: exp.company || undefined,
@@ -38,7 +38,7 @@ export function mapToResumeValues(data: ResumeServerData) {
           description: exp.description || undefined
         }
       )),
-      educations: data.Education.map(edu => (
+      educations: data.Education && data.Education.map(edu => (
         {
           degree: edu.degree || undefined,
           school: edu.school || undefined,

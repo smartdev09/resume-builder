@@ -51,7 +51,7 @@ export default function EducationForm({
 
             <Form {...form}>
                 <form className="space-y-3">
-                    {fields.map((field, index) => (
+                    {fields && fields.map((field, index) => (
                         <EducationItem 
                             key={field.id}
                             index={index}

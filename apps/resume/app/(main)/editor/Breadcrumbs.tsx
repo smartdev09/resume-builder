@@ -22,7 +22,7 @@ export default function Breadcrumbs({ currentStep, setCurrentStep}: BreadcrumbsP
         <div className="flex justify-center">
             <Breadcrumb>
                 <BreadcrumbList>
-                    {steps.map((step, index) => (
+                    {steps && steps.map((step, index) => (
                         <React.Fragment key={step.key}>
                             <BreadcrumbItem>
                                 {step.key === currentStep ? (
