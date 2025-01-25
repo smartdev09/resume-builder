@@ -9,15 +9,21 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { formatDate } from "date-fns";
 import { MoreVertical, Printer, Trash2 } from "lucide-react";
 import Link from "next/link";
-import { useRef, useState, useTransition } from "react";
+import { JSX, useRef, useState, useTransition } from "react";
 import { deleteResume } from "./actions";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@resume/ui/dialog";
 import { DialogFooter, DialogHeader } from "@resume/ui/dialog";
 import { useReactToPrint } from "react-to-print"
 import LoadingButton from "components/LoadingButton";
+import Basic from "../templates/Basic";
+import Diamond from "../templates/Diamond";
 
 interface ResumeItemProps {
     resume: ResumeServerData
+}
+
+interface Templates {
+    [key: string]: (props: any) => JSX.Element; 
 }
 
 export default function ResumeItem({resume}: ResumeItemProps) {
@@ -29,6 +35,11 @@ export default function ResumeItem({resume}: ResumeItemProps) {
     });
 
     const wasUpdated = resume.updatedAt !== resume.createdAt;
+    const templates: Templates = {
+        basic: Basic,
+        diamond: Diamond
+    };
+    const TemplateComponent = templates[resume.selectedTemplate] || Basic;
 
     return (
         <div className="group relative border rounded-lg border-transparent hover:border-border transition-color bg-secondary p-3">
@@ -52,7 +63,7 @@ export default function ResumeItem({resume}: ResumeItemProps) {
                     href={`/editor?resumeId=${resume.id}`} 
                     className="relative inline-block w-full"
                 >
-                    <ResumePreview 
+                    <TemplateComponent 
                         resumeData={mapToResumeValues(resume)}
                         contentRef={contentRef}
                         className="overflow-hidden shadow-sm grouo-hover:shadow-lg transition-shadow"

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from "next/navigation"
 import { steps } from "./steps"
-import Breadcrumbs from "./Breadcrumbs"
+import Tabs from "./Tabs"
 import Footer from "./Footer"
 import { useState } from "react"
 import { ResumeValues } from "utils/validations"
@@ -12,6 +12,7 @@ import useAutoSaveReume from "./useAutoSaveResume"
 import useUnloadWarning from "@resume/ui/hooks/use-unload-warning"
 import { ResumeServerData } from "utils/types"
 import { mapToResumeValues } from "utils/utils"
+import TemplateSelector from "./TemplateSelector"
 
 interface ResumeEditorProps {
     resumeToEdit: ResumeServerData | null;
@@ -19,14 +20,13 @@ interface ResumeEditorProps {
 
 export default function ResumeEditor({ resumeToEdit } : ResumeEditorProps) {
     const searchParams = useSearchParams();
-
     const [resumeData, setResumeData] = useState<ResumeValues>(
-        resumeToEdit ? mapToResumeValues(resumeToEdit) : {},
+        resumeToEdit ? mapToResumeValues(resumeToEdit) : { selectedTemplate: 'simple' },
     );
     const [showResumePreviewOnSmallScreen, setShowResumePreviewOnSmallScreen] = useState(false);
+    const [selectedTemplate, setSelectedTemplate] = useState(resumeData.selectedTemplate);
 
     const { isSaving, hasUnsavedData } = useAutoSaveReume(resumeData);
-    console.log(isSaving, hasUnsavedData)
 
     useUnloadWarning(hasUnsavedData)
 
@@ -43,21 +43,13 @@ export default function ResumeEditor({ resumeToEdit } : ResumeEditorProps) {
 
     return (
         <div className="flex grow flex-col">
-            {/* <header className="space-y-1.5 border-b px-3 py-5 text-center">
-                <h1 className="text-2xl font-bold">
-                    Build your resume
-                </h1>
-                <p>
-                    Follow the steps below to create your resume. Your progress will be saved automatically. 
-                </p>
-            </header> */}
             <main className="relative grow w-full">
                 <div className="absolute bottom-0 top-0 flex w-full">
                     <div className={cn("w-full p-3 overflow-y-auto space-y-12", showResumePreviewOnSmallScreen && "hidden")}>
-                        <Breadcrumbs 
-                            currentStep={currentStep} 
-                            setCurrentStep={setCurrentStep} 
-                        />
+                            <Tabs 
+                                currentStep={currentStep} 
+                                setCurrentStep={setCurrentStep} 
+                            />
                         {FormComponent && <FormComponent 
                             resumeData={resumeData}
                             setResumeData={setResumeData}    
@@ -68,6 +60,13 @@ export default function ResumeEditor({ resumeToEdit } : ResumeEditorProps) {
                         resumeData={resumeData} 
                         setResumeData={setResumeData} 
                         className={cn(showResumePreviewOnSmallScreen && "flex")}
+                        selectedTemplate={selectedTemplate}
+                    />
+                    <TemplateSelector
+                        onSelectTemplate={setSelectedTemplate}
+                        className="w-[calc(25%-1rem)]"
+                        setResumeData={setResumeData}
+                        resumeData={resumeData}
                     />
                 </div>
             </main>

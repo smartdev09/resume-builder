@@ -17,10 +17,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         async session({ session, token, user }) {
             //@ts-ignore
             session.accessToken = token.accessToken;
+            session.user.id = token.sub!;
             return session;
           },
           async jwt({ token, user, account, profile }) {
-            console.log('jwt', token, account)
             if (account) {
               token.accessToken = account.access_token;
             }
@@ -31,11 +31,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           }
     },
     providers: [Github({
-        clientId: process.env.GITHUB_ID,
-        clientSecret: process.env.GITHUB_SECRET,
+        clientId: process.env.AUTH_GITHUB_ID,
+        clientSecret: process.env.AUTH_GITHUB_SECRET,
         authorization: {
             params: {
-                scope: 'public_repo' // Add this scope
+                scope: 'user:email' // Add this scope
             }
         }
     })],

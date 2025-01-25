@@ -1,10 +1,8 @@
-import React from 'react';
-
 const ArcadeIcon = ({ 
   width = "24",
   height = "24",
   disabled = false,
-  direction = 'up',
+  direction = 'up', // set default to 'up'
   className = ""
 }) => {
   const getRotationClass = () => {
@@ -15,8 +13,10 @@ const ArcadeIcon = ({
         return 'rotate-180';
       case 'left':
         return 'rotate-270';
+      case 'up':
+        return 'rotate-0'; 
       default:
-        return 'rotate-0';
+        return 'rotate-0'; // default to no rotation (upright)
     }
   };
 

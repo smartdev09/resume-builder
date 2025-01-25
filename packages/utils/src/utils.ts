@@ -17,6 +17,7 @@ export function fileReplacer(key: string, value: File) {
 }
 
 export function mapToResumeValues(data: ResumeServerData) {
+  console.log('data', data)
   return {
       id: data.id,
       title: data.title || undefined,
@@ -50,6 +51,7 @@ export function mapToResumeValues(data: ResumeServerData) {
       colorHex: data.colorHex,
       borderStyle: data.borderStyle,
       summary: data.summary || undefined,
+      selectedTemplate: data.selectedTemplate,
 
   }
 }

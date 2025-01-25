@@ -9,17 +9,17 @@ import { ResumeValues } from "utils/validations"
 import { Badge } from "@resume/ui/badge";
 import { BorderStyles } from "app/(main)/editor/BorderStyleButton";
 
-interface ResumePreviewProps {
+interface BasicProps {
     resumeData: ResumeValues;
     contentRef?: React.Ref<HTMLDivElement>;
     className?: string;
 }
 
-export default function ResumePreview({
+export default function Simple({
     resumeData,
     contentRef,
     className,
-  }: ResumePreviewProps) {
+  }: BasicProps) {
     const containerRef = useRef<HTMLDivElement>(null);
   
     const { width } = useDimensions(containerRef);
@@ -27,7 +27,7 @@ export default function ResumePreview({
     return (
       <div
         className={cn(
-          "aspect-[210/297] h-fit w-full bg-white text-black",
+          "aspect-[210/297] bg-white text-black",
           className,
         )}
         ref={containerRef}
@@ -198,8 +198,7 @@ export default function ResumePreview({
                 )}
               </div>
               <p className="text-xs font-semibold">{exp.company}</p>
-              <div className="text-xs break-words whitespace-normal overflow-hidden">
-              {exp.description}</div>
+              <div className="whitespace-pre-line text-xs">{exp.description}</div>
             </div>
           ))}
         </div>

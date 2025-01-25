@@ -43,11 +43,11 @@ export default function Page() {
             </p>
 
             <div className="flex gap-2">
-            <ShimmerButton>
               <Link href={url} className="z-10 w-48 whitespace-pre bg-gradient-to-b bg-clip-text text-center text-md font-semibold leading-none tracking-tight text-gray-300 dark:from-white dark:to-slate-900/10 dark:text-transparent">
-                Build your resume
+                <ShimmerButton>
+                    Build your resume
+                </ShimmerButton>
               </Link>
-            </ShimmerButton>
             <Button  onClick={() => window.open(process.env.GITHUB_REPO)}><Star /> Star us</Button>
 
             </div>

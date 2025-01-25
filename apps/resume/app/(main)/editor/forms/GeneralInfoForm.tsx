@@ -15,6 +15,7 @@ export default function GeneralFormSchema ({
     const form = useForm<GeneralInfoValues>({
         resolver: zodResolver(generalInfoSchema),
         defaultValues: {
+            selectedTemplate: resumeData.selectedTemplate || "simple",
             title: resumeData.title || "",
             description: resumeData.description || "",
         }

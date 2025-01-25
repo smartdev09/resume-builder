@@ -11,11 +11,11 @@ export async function PUT(req: NextRequest) {
         const res = await fetch(
             `https://api.github.com/user/starred/UsmanDev09/nextjs-saas`,
             {
-                method: 'PUT', // Important: GitHub API requires PUT method
+                method: 'PUT', 
                 headers: {
                     'Authorization': `Bearer ${session?.accessToken}`,
                     'Accept': 'application/vnd.github.v3+json',
-                    'Content-Length': '0', // Required for PUT requests
+                    'Content-Length': '0', 
                     'X-GitHub-Api-Version': '2022-11-28'
                 }
             }

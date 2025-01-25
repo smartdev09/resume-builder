@@ -37,6 +37,8 @@ export default async function Home() {
       }
     })
   ])
+
+  console.log('resumes', resumes)
   
   return (
     <main className="max-w-7xl mx-auto w-full px-3 py-6 space-y-6">

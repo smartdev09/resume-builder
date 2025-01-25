@@ -4,7 +4,8 @@ const optionalString = z.string().trim().optional().or(z.literal("")) // string 
 
 export const generalInfoSchema = z.object({
   title: optionalString,
-  description: optionalString
+  description: optionalString,
+  selectedTemplate: z.string(),
 })
 
 export type GeneralInfoValues = z.infer<typeof generalInfoSchema>
@@ -22,7 +23,7 @@ export const personalInfoSchema = z.object({
   city: optionalString,
   country: optionalString,
   phone: optionalString,
-  email: z.string().email('Invalid email address').optional(),
+  email: optionalString,
   photo: z
   .custom<File | undefined>()
   .refine(
@@ -55,7 +56,8 @@ export const educationSchema = z.object({
       degree: optionalString,
       school: optionalString,
       startDate: optionalString,
-      endDate: optionalString
+      endDate: optionalString,
+      description: optionalString
     })
   )
   .optional()
@@ -83,7 +85,7 @@ export const resumeSchema = z.object({
   ...skillsSchema.shape,
   ...summarySchema.shape,
   colorHex: optionalString,
-  borderStyle: optionalString
+  borderStyle: optionalString,
 })
 
 export type ResumeValues = Omit<z.infer<typeof resumeSchema>, "photo"> & {

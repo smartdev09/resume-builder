@@ -8,12 +8,16 @@ import path from "path";
 
 export async function saveResume(values: ResumeValues) {
     const { id } = values;
+
+    console.log('values', values)
     
     const { photo, workExperiences, educations, ...resumeValues } = resumeSchema.parse(values);
 
+    console.log('RV', resumeValues)
+
     const session = await auth();
 
-    console.log(session)
+    console.log('session', session)
 
     if(!session?.user) {
         throw new Error("Please login to continue")
@@ -43,7 +47,7 @@ export async function saveResume(values: ResumeValues) {
 
     if(id) {
         return prisma.resume.update({
-            where: {id},
+            where: { id },
             data: {
                 ...resumeValues,
                 photoUrl: newPhotoUrl,
@@ -69,10 +73,12 @@ export async function saveResume(values: ResumeValues) {
             }
         })
     } else {
+        console.log('USERR IDDD', session.user.id)
         return prisma.resume.create({
             data: {
               ...resumeValues,
-              userid: session?.user?.id!,
+              selectedTemplate: 'simple',
+              userid: session.user.id!,
               photoUrl: newPhotoUrl,
               WorkExperience: {
                 create: workExperiences?.map((exp) => ({
