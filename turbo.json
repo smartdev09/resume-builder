@@ -16,7 +16,8 @@
         "NODE_ENV"
       ],
       "dependsOn": [
-        "^db:generate"
+        "^db:generate",
+        "^build"
       ],
       "inputs": [
         "$TURBO_DEFAULT$",
