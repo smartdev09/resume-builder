@@ -2,8 +2,7 @@
   "name": "resume-editor-microfrontend",
   "private": true,
   "scripts": {
-    "build": "turbo run db:generate build:next",
-    "build:next": "turbo build",
+    "build": "turbo run db:generate build",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
