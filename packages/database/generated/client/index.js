@@ -230,7 +230,7 @@ const config = {
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../.env"
+    "schemaEnvPath": "../../../../apps/resume/.env"
   },
   "relativePath": "../../prisma",
   "clientVersion": "6.1.0",
@@ -258,8 +258,8 @@ const fs = require('fs')
 config.dirname = __dirname
 if (!fs.existsSync(path.join(__dirname, 'schema.prisma'))) {
   const alternativePaths = [
-    "generated/client",
-    "client",
+    "../../packages/database/generated/client",
+    "../packages/database/generated/client",
   ]
   
   const alternativePath = alternativePaths.find((altPath) => {
@@ -288,7 +288,7 @@ Object.assign(exports, Prisma)
 
 // file annotations for bundling tools to include these files
 path.join(__dirname, "libquery_engine-darwin-arm64.dylib.node");
-path.join(process.cwd(), "generated/client/libquery_engine-darwin-arm64.dylib.node")
+path.join(process.cwd(), "../../packages/database/generated/client/libquery_engine-darwin-arm64.dylib.node")
 // file annotations for bundling tools to include these files
 path.join(__dirname, "schema.prisma");
-path.join(process.cwd(), "generated/client/schema.prisma")
+path.join(process.cwd(), "../../packages/database/generated/client/schema.prisma")

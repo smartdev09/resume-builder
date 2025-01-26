@@ -229,7 +229,7 @@ const config = {
   },
   "relativeEnvPaths": {
     "rootEnvPath": null,
-    "schemaEnvPath": "../../.env"
+    "schemaEnvPath": "../../../../apps/resume/.env"
   },
   "relativePath": "../../prisma",
   "clientVersion": "6.1.0",
