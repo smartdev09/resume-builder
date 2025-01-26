@@ -1,25 +1,18 @@
 import { PrismaClient } from "@prisma/client";
 
-// Extend PrismaClient if you have custom extensions
 const prismaClientSingleton = () => {
   return new PrismaClient().$extends({
-    // Add your Prisma client extensions here, if any
+    // Any extensions you might have
   });
 };
 
-// Type definition for the singleton
 type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
 
-// Global object to ensure a single instance in development
-const globalForPrisma = global as unknown as {
-  prisma: PrismaClientSingleton | undefined;
+const globalForPrisma = global as unknown as { 
+  prisma: PrismaClientSingleton 
 };
 
-// Initialize Prisma client
-export const prisma =
-  globalForPrisma.prisma ?? prismaClientSingleton();
+export const prisma = 
+  globalForPrisma.prisma || prismaClientSingleton();
 
-// Prevent reinitialization in development mode
-if (process.env.NODE_ENV !== "production") {
-  globalForPrisma.prisma = prisma;
-}
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
