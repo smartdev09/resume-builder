@@ -1,7 +1,7 @@
 "use server"
 
 import { auth } from "utils/auth";
-import prisma from "../utils/prisma";
+import { prisma } from "@resume/db";
 import { resumeSchema, ResumeValues } from "utils/validations";
 import { del, put } from "@vercel/blob";
 import path from "path";
