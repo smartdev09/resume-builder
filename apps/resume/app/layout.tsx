@@ -7,7 +7,7 @@ import { ThemeProvider } from "next-themes";
 // import "./globals.css";
 import "@resume/ui/globals.css"
 import { Toaster } from "@resume/ui/toaster";
-import Navbar from "../components/Navbar";
+import Navbar from "./components/Navbar";
 
 const inter = Inter({ subsets: ['latin']});
 

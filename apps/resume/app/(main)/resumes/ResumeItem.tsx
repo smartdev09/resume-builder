@@ -1,6 +1,6 @@
 'use client'
 
-import ResumePreview from "../../../components/ResumePreview";
+import ResumePreview from "../../components/ResumePreview";
 import { Button } from "@resume/ui/button";
 import { useToast } from "@resume/ui/hooks/use-toast";
 import { ResumeServerData } from "utils/types"
@@ -14,7 +14,7 @@ import { deleteResume } from "./actions";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@resume/ui/dialog";
 import { DialogFooter, DialogHeader } from "@resume/ui/dialog";
 import { useReactToPrint } from "react-to-print"
-import LoadingButton from "components/LoadingButton";
+import LoadingButton from "app/components/LoadingButton";
 import Basic from "../templates/Basic";
 import Diamond from "../templates/Diamond";
 
