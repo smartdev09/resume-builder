@@ -147,7 +147,6 @@ importers:
       '@prisma/client':
         specifier: ^6.1.0
         version: 6.1.0(prisma@6.1.0)
-    devDependencies:
       prisma:
         specifier: ^6.1.0
         version: 6.1.0

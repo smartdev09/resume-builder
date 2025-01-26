@@ -8,9 +8,7 @@
         "db:deploy": "prisma migrate deploy"
     },
     "dependencies": {
-        "@prisma/client": "^6.1.0"
-    },
-    "devDependencies": {
+        "@prisma/client": "^6.1.0",
         "prisma": "^6.1.0"
     },
     "exports": {
