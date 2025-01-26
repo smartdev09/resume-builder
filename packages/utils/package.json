@@ -1,9 +1,6 @@
 {
     "name": "utils",
     "type": "module",
-    "scripts": {
-        "build": "tsc -noEmit"
-    },
     "exports": {
         "./getSession": "./src/getSession.ts",
         "./prisma": "./src/prisma.ts",
