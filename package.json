@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "build": "turbo run db:generate build",
+    "db:generate": "npx prisma generate --schema=./packages/database/prisma/schema.prisma",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
