@@ -25,7 +25,8 @@
       ],
       "outputs": [
         ".next/**",
-        "!.next/cache/**"
+        "!.next/cache/**",
+        ".vercel/**"
       ]
     },
     "lint": {

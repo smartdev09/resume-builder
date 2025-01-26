@@ -1,9 +1,0 @@
-{
-    "outputDirectory": "apps/resume/.next",
-    "rewrites": [
-        {
-            "source": "/(.*)",
-            "destination": "/index.html"
-        }
-    ]
-}
