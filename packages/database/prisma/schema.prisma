@@ -1,6 +1,6 @@
 datasource db {
   provider = "postgresql"
-  url      = "postgresql://resume-builder_owner:aN9ugMkcR5CA@ep-damp-dew-a15z9inj.ap-southeast-1.aws.neon.tech/resume-builder?sslmode=require"
+  url      = env("DATABASE_URL")
 }
 
 generator client {
