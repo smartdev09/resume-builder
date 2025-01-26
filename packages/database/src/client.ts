@@ -1,8 +1,18 @@
-import { PrismaClient } from "../generated/client";
+import { PrismaClient } from "@prisma/client";
 
-const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const prismaClientSingleton = () => {
+  return new PrismaClient().$extends({
+    // Any extensions you might have
+  });
+};
 
-export const prisma =
-  globalForPrisma.prisma || new PrismaClient();
+type PrismaClientSingleton = ReturnType<typeof prismaClientSingleton>;
+
+const globalForPrisma = global as unknown as { 
+  prisma: PrismaClientSingleton 
+};
+
+export const prisma = 
+  globalForPrisma.prisma || prismaClientSingleton();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;

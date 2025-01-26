@@ -1,4 +1,4 @@
-import { Prisma } from "@prisma/client";
+import { prisma } from "@resume/db";
 import { ResumeValues } from "./validations";
 
 export interface EditorFormProps {

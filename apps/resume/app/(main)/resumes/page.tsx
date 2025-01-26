@@ -1,5 +1,5 @@
 import { Button } from "@resume/ui/button";
-import prisma from "utils/prisma";
+import { prisma } from "@resume/db";
 import { resumeDataIncludes } from "utils/types";
 import { PlusSquare } from "lucide-react";
 import { Metadata } from "next";

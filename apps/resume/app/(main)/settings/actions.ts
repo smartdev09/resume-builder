@@ -1,7 +1,7 @@
 "use server";
 
 import getSession from "utils/getSession";
-import prisma from "utils/prisma";
+import { prisma } from "@resume/db";
 import { UpdateProfileValues, updateProfileSchema } from "utils/validations";
 import { revalidatePath } from "next/cache";
 

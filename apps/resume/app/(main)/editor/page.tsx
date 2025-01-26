@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import ResumeEditor from "./ResumeEditor";
-import prisma from "utils/prisma";
+import { prisma } from "@resume/db";
 import { auth } from "utils/auth";
 import { resumeDataIncludes } from "utils/types";
 
