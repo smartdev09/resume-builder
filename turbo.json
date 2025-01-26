@@ -12,7 +12,8 @@
         "AUTH_GITHUB_SECRET",
         "GITHUB_REPO",
         "DOMAIN",
-        "DATABASE_URL"
+        "DATABASE_URL",
+        "NODE_ENV"
       ],
       "dependsOn": [
         "^build"
