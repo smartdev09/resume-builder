@@ -2,7 +2,7 @@
     "name": "utils",
     "type": "module",
     "scripts": {
-        "build": "tsc -noEmit"
+        "build": "npx tsc -noEmit"
     },
     "exports": {
         "./getSession": "./src/getSession.ts",
