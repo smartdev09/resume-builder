@@ -1,3 +1,9 @@
 {
-    "outputDirectory": "apps/resume/.next"
+    "outputDirectory": "apps/resume/.next",
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/"
+        }
+    ]
 }
