@@ -7,7 +7,7 @@ import useDimensions from "@resume/ui/hooks/use-dimensions";
 import cn from "@resume/ui/cn";
 import { ResumeValues } from "utils/validations"
 import { Badge } from "@resume/ui/badge";
-import { BorderStyles } from "app/(main)/editor/BorderStyleButton";
+import { BorderStyles } from "../../(main)/editor/BorderStyleButton";
 
 interface BasicProps {
     resumeData: ResumeValues;

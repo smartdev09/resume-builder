@@ -14,7 +14,7 @@ import { deleteResume } from "./actions";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@resume/ui/dialog";
 import { DialogFooter, DialogHeader } from "@resume/ui/dialog";
 import { useReactToPrint } from "react-to-print"
-import LoadingButton from "app/components/LoadingButton";
+import LoadingButton from "../../components/LoadingButton";
 import Basic from "../templates/Basic";
 import Diamond from "../templates/Diamond";
 

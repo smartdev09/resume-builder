@@ -6,7 +6,7 @@ import {
   } from "@resume/ui/tooltip"
 import { steps } from "./steps";
 import React, { useState } from "react";
-import LottieAnimation from "app/components/LottieAnimation";
+import LottieAnimation from "../../components/LottieAnimation";
 
 interface BreadcrumbsProps {
     currentStep: string;
