@@ -38,6 +38,9 @@ importers:
       '@module-federation/nextjs-mf':
         specifier: ^8.8.9
         version: 8.8.9(@rspack/core@1.1.8(@swc/helpers@0.5.15))(next@15.1.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react-dom@19.0.0(react@19.0.0))(react@19.0.0)(styled-jsx@5.1.6(react@19.0.0))(typescript@5.7.2)(webpack@5.97.1)
+      '@prisma/client':
+        specifier: ^6.1.0
+        version: 6.1.0(prisma@6.1.0)
       '@radix-ui/react-dialog':
         specifier: ^1.1.4
         version: 1.1.4(@types/react-dom@19.0.2(@types/react@19.0.2))(@types/react@19.0.2)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -291,9 +294,6 @@ importers:
       '@auth/prisma-adapter':
         specifier: ^2.7.4
         version: 2.7.4(@prisma/client@6.1.0(prisma@6.1.0))
-      '@prisma/client':
-        specifier: ^6.1.0
-        version: 6.1.0(prisma@6.1.0)
       '@resume/db':
         specifier: workspace:*
         version: link:../database
@@ -306,9 +306,6 @@ importers:
       next-auth:
         specifier: 5.0.0-beta.25
         version: 5.0.0-beta.25(next@15.1.2(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
-      prisma:
-        specifier: ^6.1.0
-        version: 6.1.0
       react:
         specifier: ^19
         version: 19.0.0
