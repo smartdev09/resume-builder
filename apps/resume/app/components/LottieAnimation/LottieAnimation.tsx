@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import Lottie from 'react-lottie';
 
-import arcadeAnimationData from 'public/assets/lottyIcons/Education.json';
-import dashboardAnimationData from 'public/assets/lottyIcons/DashboardIcon.json';
-import defaultAnimationData from 'public/assets/lottyIcons/PersonalInfo.json';
-import diagnosisAnimationData from 'public/assets/lottyIcons/SkillIcon.json';
-import linkedAnimationData from 'public/assets/lottyIcons/Summary.json';
-import logoutAnimationData from 'public/assets/lottyIcons/LogoutIcon.json';
-import profileAnimationData from 'public/assets/lottyIcons/ProfileIcon.json';
+import arcadeAnimationData from '../../../public/assets/lottyIcons/DashboardIcon.json';
+import dashboardAnimationData from '../../../public/assets/lottyIcons/DashboardIcon.json';
+import defaultAnimationData from '../../../public/assets/lottyIcons/PersonalInfo.json';
+import diagnosisAnimationData from '../../../public/assets/lottyIcons/SkillIcon.json';
+import linkedAnimationData from '../../../public/assets/lottyIcons/Summary.json';
+import logoutAnimationData from '../../../public/assets/lottyIcons/LogoutIcon.json';
+import profileAnimationData from '../../../public/assets/lottyIcons/ProfileIcon.json';
 
 import type { ILottieAnimationProps } from './types';
 
