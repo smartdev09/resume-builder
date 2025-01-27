@@ -36,3 +36,11 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+
+# Prisma
+generated/
+*/generated/
+./packages/database/generated
+
+packages/database/generated
