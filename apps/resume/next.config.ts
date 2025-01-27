@@ -1,9 +1,8 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'standalone',
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client', 'prisma']
+  outputFileTracingIncludes: {
+    '/**': ['./packages/database/generated/**/*']
   },
 
   env: {
