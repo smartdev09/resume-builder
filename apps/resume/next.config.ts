@@ -2,9 +2,9 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: 'standalone',
-    outputFileTracingIncludes: {
-      '/apps/resume': ['../../packages/database/generated/**/*']
-    },
+  outputFileTracingIncludes: {
+    '/apps/resume': ['../../packages/database/generated/**/*']
+  },
 
 
   env: {
