@@ -16,8 +16,8 @@
         "NODE_ENV"
       ],
       "dependsOn": [
-        "^db:generate",
-        "^build"
+        "^build",
+        "^db:generate"
       ],
       "inputs": [
         "$TURBO_DEFAULT$",
@@ -54,9 +54,6 @@
       "persistent": true
     },
     "db:deploy": {
-      "cache": false
-    },
-    "copy:prisma": {
       "cache": false
     }
   }
