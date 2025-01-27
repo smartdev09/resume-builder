@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  outputFileTracingIncludes: {
-    '/**': ['./packages/database/generated/**/*']
-  },
+  output: 'standalone',
+    outputFileTracingIncludes: {
+      '/apps/resume': ['../../packages/database/generated/**/*']
+    },
+
 
   env: {
     DATABASE_URL: process.env.DATABASE_URL,
