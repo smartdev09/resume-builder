@@ -55,6 +55,9 @@
     },
     "db:deploy": {
       "cache": false
+    },
+    "copy:prisma": {
+      "cache": false
     }
   }
 }
