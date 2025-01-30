@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-const { withTurbo } = require('@turbo/next');
+// const { withTurbo } = require('@turbo/next');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
