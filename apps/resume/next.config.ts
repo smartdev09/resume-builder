@@ -12,8 +12,6 @@ const nextConfig: NextConfig = {
     ]
   },
 
-
-
   env: {
     DATABASE_URL: process.env.DATABASE_URL,
     GITHUB_REPO: process.env.GITHUB_REPO,
