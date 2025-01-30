@@ -2,8 +2,8 @@
   "name": "resume-editor-microfrontend",
   "private": true,
   "scripts": {
-    "build": "turbo run db:generate build",
     "db:generate": "prisma generate --schema=./packages/database/prisma/schema.prisma",
+    "build": "turbo run db:generate build",
     "dev": "turbo dev",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\""
