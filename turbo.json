@@ -16,7 +16,6 @@
         "NODE_ENV"
       ],
       "dependsOn": [
-        "db:generate",
         "^build"
       ],
       "inputs": [
