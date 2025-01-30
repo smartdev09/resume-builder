@@ -1,21 +1,34 @@
 import type { NextConfig } from "next";
 // const { withTurbo } = require('@turbo/next');
+const nodeExternals = require('webpack-node-externals');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
   transpilePackages: ['@prisma/client', '@resume/db'],
+  
   outputFileTracingIncludes: {
     '/apps/resume': [
       '../../packages/database/generated/**/*',
-      // Add Prisma engine tracing
-      '../../node_modules/@prisma/engines/**/*',
-      '../../node_modules/.pnpm/@prisma+engines*'
+      '../../node_modules/@prisma/engines/**/*'
     ]
   },
   webpack: (config, { isServer }) => {
     if (isServer) {
-      config.externals.push('@prisma/client');
+      // Use webpack-node-externals for server bundle
+      config.externals = [
+        nodeExternals({
+          allowlist: [/@prisma\/client/],
+        }),
+        ...(config.externals || [])
+      ];
+      
+      // Add special handling for Prisma
+      config.module.rules.push({
+        test: /\.prisma$/,
+        loader: 'null-loader'
+      });
     }
+    
     return config;
   },
 
