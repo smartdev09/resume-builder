@@ -9,6 +9,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     theme: {
         logo: '' // add logo
     },
+    //@ts-ignore
     adapter: PrismaAdapter(prisma) as Adapter,
     session: {
         strategy: 'jwt',
