@@ -16,8 +16,8 @@
         "NODE_ENV"
       ],
       "dependsOn": [
-        "@resume/db#build",
-        "db:generate"
+        "^db:generate",
+        "^build"
       ],
       "inputs": [
         "$TURBO_DEFAULT$",
