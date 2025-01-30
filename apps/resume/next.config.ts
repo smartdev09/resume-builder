@@ -1,6 +1,5 @@
 import type { NextConfig } from "next";
 // const { withTurbo } = require('@turbo/next');
-const nodeExternals = require('webpack-node-externals');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
@@ -12,25 +11,7 @@ const nextConfig: NextConfig = {
       '../../node_modules/@prisma/engines/**/*'
     ]
   },
-  webpack: (config, { isServer }) => {
-    if (isServer) {
-      // Use webpack-node-externals for server bundle
-      config.externals = [
-        nodeExternals({
-          allowlist: [/@prisma\/client/],
-        }),
-        ...(config.externals || [])
-      ];
-      
-      // Add special handling for Prisma
-      config.module.rules.push({
-        test: /\.prisma$/,
-        loader: 'null-loader'
-      });
-    }
-    
-    return config;
-  },
+
 
 
   env: {
