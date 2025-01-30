@@ -16,7 +16,7 @@
         "NODE_ENV"
       ],
       "dependsOn": [
-        "^build",
+        "@resume/db#build",
         "db:generate"
       ],
       "inputs": [
