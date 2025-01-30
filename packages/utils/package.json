@@ -24,6 +24,8 @@
         "react": "^19",
         "tailwind-merge": "^2.6.0",
         "zod": "^3.24.1",
-        "@resume/db": "workspace:*"
+        "@resume/db": "workspace:*",
+        "@prisma/client": "^6.1.0",
+        "prisma": "^6.1.0"
     }
 }

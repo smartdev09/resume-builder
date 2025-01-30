@@ -37,9 +37,7 @@
     "react-lottie": "^1.2.10",
     "react-to-print": "^3.0.3",
     "tailwindcss-animate": "^1.0.7",
-    "utils": "workspace:*",
-    "@prisma/client": "^6.1.0",
-    "prisma": "^6.1.0"
+    "utils": "workspace:*"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
