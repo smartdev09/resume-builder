@@ -1,9 +1,22 @@
 import type { NextConfig } from "next";
+const { withTurbo } = require('@turbo/next');
 
 const nextConfig: NextConfig = {
   output: 'standalone',
+  transpilePackages: ['@prisma/client', '@resume/db'],
   outputFileTracingIncludes: {
-    '/apps/resume': ['../../packages/database/generated/**/*']
+    '/apps/resume': [
+      '../../packages/database/generated/**/*',
+      // Add Prisma engine tracing
+      '../../node_modules/@prisma/engines/**/*',
+      '../../node_modules/.pnpm/@prisma+engines*'
+    ]
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.externals.push('@prisma/client');
+    }
+    return config;
   },
 
 
