@@ -9,9 +9,9 @@ import { useIsMobile } from "../../../hooks/use-mobile"
 import cn from "@resume/ui/cn";
 import { Button } from "./button"
 import { Input } from "./input"
-import { Separator } from "@/src/components/ui/separator"
-import { Sheet, SheetContent } from "@/src/components/ui/sheet"
-import { Skeleton } from "@/src/components/ui/skeleton"
+import { Separator } from "./separator"
+import { Sheet, SheetContent } from "./sheet"
+import { Skeleton } from "./skeleton"
 import {
   Tooltip,
   TooltipContent,
@@ -21,9 +21,9 @@ import {
 
 const SIDEBAR_COOKIE_NAME = "sidebar:state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
-const SIDEBAR_WIDTH = "16rem"
-const SIDEBAR_WIDTH_MOBILE = "18rem"
-const SIDEBAR_WIDTH_ICON = "3rem"
+const SIDEBAR_WIDTH = "5rem"
+const SIDEBAR_WIDTH_MOBILE = "5rem"
+const SIDEBAR_WIDTH_ICON = "4rem"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContext = {

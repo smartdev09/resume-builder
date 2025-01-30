@@ -3,6 +3,8 @@ import ResumeEditor from "./ResumeEditor";
 import { prisma } from "@resume/db";
 import { auth } from "utils/auth";
 import { resumeDataIncludes } from "utils/types";
+import { SidebarProvider } from "@resume/ui/sidebar";
+import { AppSidebar } from "./AppSidebar";
 
 interface PageProps {
     searchParams: Promise<{ resumeId?: string}>
@@ -27,6 +29,9 @@ export default async function Home({ searchParams } : PageProps) {
         }) : null
         
     return (
-        <ResumeEditor resumeToEdit={resumeToEdit}/>
+        <SidebarProvider >
+            <AppSidebar />
+            <ResumeEditor resumeToEdit={resumeToEdit}/>
+        </SidebarProvider>
     )
 }

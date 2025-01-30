@@ -34,8 +34,8 @@ export function mapToResumeValues(data: ResumeServerData) {
         {
           position: exp.position || undefined,
           company: exp.company || undefined,
-          startDate: exp.startDate?.toISOString().split("T").join(""),
-          endDate: exp.endDate?.toISOString().split("T").join(""), 
+          startDate: exp.startDate ? exp.startDate.toISOString().split("T")[0] : undefined,
+          endDate: exp.endDate ? exp.endDate.toISOString().split("T")[0] : undefined,
           description: exp.description || undefined
         }
       )),
@@ -43,8 +43,8 @@ export function mapToResumeValues(data: ResumeServerData) {
         {
           degree: edu.degree || undefined,
           school: edu.school || undefined,
-          startDate: edu.startDate?.toISOString().split("T").join(""),
-          endDate: edu.endDate?.toISOString().split("T").join(""), 
+          startDate: edu.startDate ? edu.startDate.toISOString().split("T")[0] : undefined,
+          endDate: edu.endDate ? edu.endDate.toISOString().split("T")[0] : undefined,
         }
       )),
       skills: data.skills,

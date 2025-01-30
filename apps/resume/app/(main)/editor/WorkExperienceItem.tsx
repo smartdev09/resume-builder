@@ -71,7 +71,11 @@ export default function WorkExperienceItem({ id, form, index, remove }: WorkExpe
                                 Start Date
                             </FormLabel>
                             <FormControl>
-                                <Input type="date" value={field.value?.slice(0,10)} onChange={(e) => field.onChange(e.target.value)} />
+                                <Input
+                                    {...field}
+                                    type="date"
+                                    value={field.value?.slice(0, 10)}
+                                />
                             </FormControl>
                         </FormItem>
                     )}
@@ -86,7 +90,11 @@ export default function WorkExperienceItem({ id, form, index, remove }: WorkExpe
                                 End Date
                             </FormLabel>
                             <FormControl>
-                                <Input {...field} />
+                                <Input
+                                    {...field}
+                                    type="date"
+                                    value={field.value?.slice(0, 10)}
+                                />
                             </FormControl>
                         </FormItem>
                     )}

@@ -122,7 +122,7 @@ function ExperienceSection({ resumeData }: ResumeSectionProps) {
   const { workExperiences, colorHex } = resumeData;
   
   if(!workExperiences) return null;
-
+  console.log(workExperiences[0]?.startDate)
   return (
     <section className="relative break-inside-avoid">
       <div className="absolute left-5 top-12 bottom-0 w-[1px] bg-gray-200" />
@@ -137,8 +137,8 @@ function ExperienceSection({ resumeData }: ResumeSectionProps) {
             className="flex relative pl-6 before:content-[''] before:absolute before:left-0 before:top-2 before:w-2 before:h-2 before:bg-[#2D3748] before:rotate-45"
           >
             <div className="w-24 flex-shrink-0 text-gray-600 text-sm font-bold">
-              {exp.startDate && formatDate(exp.startDate, "MMM yyyy")} -{" "}
-              {exp.endDate ? formatDate(exp.endDate, "MMM yyyy") : "present"}
+              {exp.startDate && formatDate((exp?.startDate), "MMM yyyy")} -{" "}
+              {exp.endDate ? formatDate((exp?.endDate), "MMM yyyy") : "present"}
             </div>
             <div className="flex-1">
               <div className="font-bold text-gray-800">{exp.position}</div>

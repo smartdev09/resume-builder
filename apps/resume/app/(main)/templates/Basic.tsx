@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { formatDate } from "date-fns"
+import { format } from "date-fns"
 
 import useDimensions from "@resume/ui/hooks/use-dimensions";
 
@@ -27,7 +27,7 @@ export default function Simple({
     return (
       <div
         className={cn(
-          "aspect-[210/297] bg-white text-black",
+          "aspect-[210/297] h-fit w-full bg-white text-black",
           className,
         )}
         ref={containerRef}
@@ -192,8 +192,8 @@ export default function Simple({
                 <span>{exp.position}</span>
                 {exp.startDate && (
                   <span>
-                    {formatDate(exp.startDate, "MM/yyyy")} -{" "}
-                    {exp.endDate ? formatDate(exp.endDate, "MM/yyyy") : "Present"}
+                    {format(new Date(exp?.startDate), "MM/yyyy")} - {" "}
+                    {exp.endDate ? format(new Date(exp?.endDate), "MM/yyyy") : "Present"}
                   </span>
                 )}
               </div>
@@ -244,7 +244,8 @@ export default function Simple({
                 {edu.startDate && (
                   <span>
                     {edu.startDate &&
-                      `${formatDate(edu.startDate, "MM/yyyy")} ${edu.endDate ? `- ${formatDate(edu.endDate, "MM/yyyy")}` : ""}`}
+                      `${format(edu.startDate, "MM/yyyy")} ${edu.endDate ? `- ${format(edu.endDate, "MM/yyyy")}` : ""}`
+                    }
                   </span>
                 )}
               </div>

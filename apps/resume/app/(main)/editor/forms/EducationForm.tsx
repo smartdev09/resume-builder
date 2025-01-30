@@ -4,9 +4,9 @@ import { educationSchema, EducationValues } from "utils/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect } from "react";
 import { useFieldArray, useForm } from "react-hook-form";
-import EducationItem from "../EducationItem";
 import { Button } from "@resume/ui/button";
 import { Plus } from "lucide-react";
+import { EducationItem } from "../EducationItem";
 
 export default function EducationForm({ 
     resumeData, 
@@ -57,6 +57,8 @@ export default function EducationForm({
                             index={index}
                             form={form}
                             remove={remove}
+                            id={field.id}
+
                         />
 
                     ))}

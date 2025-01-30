@@ -57,7 +57,7 @@ export default function ResumeItem({resume}: ResumeItemProps) {
                     <p className="text-xs text-muted-foreground">
                         {wasUpdated ? "Updated" : "Created"} on{" "}
                         {formatDate(resume.updatedAt, "MMM d, yyyy h:mm a")}
-                    </p>
+                        </p>
                 </Link>
                 <Link 
                     href={`/editor?resumeId=${resume.id}`} 
