@@ -30,6 +30,7 @@ export default function Diamond({
         className={cn("flex flex-col", !width && "invisible")}
         style={{
           zoom: (1 / 794) * width,
+          fontFamily: resumeData.fontStyle,
         }}
         ref={contentRef}
         id="resumePreviewContent"

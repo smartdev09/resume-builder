@@ -1,15 +1,15 @@
-
 import type { Metadata } from "next";
 import { SessionProvider } from "next-auth/react";
-import { Inter } from "next/font/google";
+import { Rubik } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { Providers } from "./providers";
 
 // import "./globals.css";
 import "@resume/ui/globals.css"
 import { Toaster } from "@resume/ui/toaster";
 import Navbar from "./components/Navbar";
 
-const inter = Inter({ subsets: ['latin']});
+const rubik = Rubik();
 
 export const metadata: Metadata = {
   title: {
@@ -27,20 +27,22 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <SessionProvider>
-        <body
-          className={`${inter.className} antialiased`}
-        >
-        <ThemeProvider 
-          attribute="class" 
-          defaultTheme="system" 
-          enableSystem 
-          disableTransitionOnChange
-        >
-          <Toaster />
-          <Navbar />
-          {children}
-        </ThemeProvider>
+        <Providers>
+          <body
+            className={`${rubik.className}`}
+          >
+          <ThemeProvider 
+            attribute="class" 
+            defaultTheme="system" 
+            enableSystem 
+            disableTransitionOnChange
+          >
+            <Toaster />
+            <Navbar />
+            {children}
+          </ThemeProvider>
         </body>
+        </Providers>
       </SessionProvider>
     </html>
   );

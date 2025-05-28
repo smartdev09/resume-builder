@@ -2,10 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
-/* :root {
+ :root {
   --background: #ffffff;
-  --foreground: #171717;
 }
+
+.dark {
+  --background: #000;
+}
+
+/*
 
 @media (prefers-color-scheme: dark) {
   :root {
@@ -22,4 +27,28 @@ body {
 
 .lottie-container {
   background: white
+}
+
+.summary-quill .ql-toolbar {
+  border: none !important;
+  border-bottom: 1px solid hsl(var(--input)) !important;
+  background-color: transparent;
+}
+
+.summary-quill .ql-container {
+  border: none !important;
+  height: calc(100% - 42px);
+}
+
+.summary-quill .ql-snow .ql-stroke {
+  stroke: white;
+}
+
+.summary-quill .ql-snow .ql-fill {
+  fill: white;
+}
+
+.summary-quill .ql-snow.ql-toolbar button:hover .ql-stroke,
+.summary-quill .ql-snow.ql-toolbar button:focus .ql-stroke {
+  stroke: hsl(var(--primary));
 }

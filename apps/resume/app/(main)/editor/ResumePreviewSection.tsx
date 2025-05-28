@@ -7,6 +7,10 @@ import Basic from "../templates/Basic";
 import Diamond from "../templates/Diamond";
 import Vibes from "../templates/Vibes";
 import IT from "../templates/IT";
+import Faang from "../templates/Faang"
+import TwoColumn from "../templates/TwoColumn";
+import AtsApproved from "../templates/AtsApproved"
+
 import { JSX } from "react";
 
 interface ResumePreviewSectionProps {
@@ -28,17 +32,20 @@ export default function ResumePreviewSection({
 }: ResumePreviewSectionProps) {
 
     const templates: Templates = {
+        faang: Faang,
+        "two-column": TwoColumn,
+        "ats-approved": AtsApproved,
         basic: Basic,
         diamond: Diamond,
         vibes: Vibes,
-        it: IT
+        it: IT,
     };
     
     const TemplateComponent = templates[selectedTemplate] || Basic;
 
     return (
-        <div className={cn("group relative hidden w-full md:flex bg-secondary", className)}>
-             <TemplateComponent resumeData={resumeData} className={"max-w-2xl bg-white shadow-md"}/>
+        <div className={cn("group relative hidden w-full rounded-md md:flex", className)}>
+             <TemplateComponent resumeData={resumeData} className={" bg-white shadow-md"}/>
         </div>
     )
 }
