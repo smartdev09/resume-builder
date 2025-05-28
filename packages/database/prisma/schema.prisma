@@ -67,27 +67,37 @@ model VerificationToken {
 }
 
 model Resume {
-  id               String           @id @default(cuid())
-  userid           String
-  selectedTemplate String
-  title            String?
-  description      String?
-  photoUrl         String?
-  colorHex         String           @default("#000000")
-  borderStyle      String           @default("squircle")
-  summary          String?
-  firstName        String?
-  lastName         String?
-  jobTitle         String?
-  city             String?
-  country          String?
-  phone            String?
-  email            String?
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
-  WorkExperience   WorkExperience[]
-  Education        Education[]
-  skills           String[]
+  id                String           @id @default(cuid())
+  userid            String
+  selectedTemplate  String
+  title             String?
+  description       String?
+  photoUrl          String?
+  primaryColorHex   String           @default("#000000")
+  secondaryColorHex String           @default("#000000")
+  primaryFontSize   String?
+  secondaryFontSize String?
+  fontStyle         String?
+  borderStyle       String           @default("squircle")
+  summary           String?
+  firstName         String?
+  lastName          String?
+  jobTitle          String?
+  city              String?
+  country           String?
+  phone             String?
+  email             String?
+  linkedin          String?
+  github            String?
+  website           String?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  workExperience    WorkExperience[]
+  education         Education[]
+  projects          Project[]
+  certificates      Certificate[]
+  languages         Language[]
+  skillSections     SkillSection[]
 
   @@map("resumes")
 }
@@ -121,3 +131,72 @@ model Education {
 
   @@map("educations")
 }
+
+model Project {
+  id          String    @id @default(cuid())
+  name        String?
+  role        String?
+  startDate   DateTime?
+  endDate     DateTime?
+  description String?
+  Resume      Resume?   @relation(fields: [resumeId], references: [id])
+  resumeId    String?
+
+  @@map("projects")
+}
+
+model Language {
+  id String @id @default(cuid())
+
+  name        String?
+  proficiency Profieciency?
+  Resume      Resume?       @relation(fields: [resumeId], references: [id])
+  resumeId    String?
+
+  @@map("languages")
+}
+
+model Certificate {
+  id             String    @id @default(cuid())
+  name           String?
+  completionDate DateTime?
+  source         String?
+  link           String?
+  Resume         Resume?   @relation(fields: [resumeId], references: [id])
+  resumeId       String?
+
+  @@map("certificates")
+}
+
+model SkillSection {
+  id       String   @id @default(cuid())
+  name     String
+  skills   String[]
+  order    Int      @default(0)
+  resumeId String
+  resume   Resume   @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@map("skill_sections")
+}
+
+model Review {
+  id            String   @id @default(cuid())
+  text          String   @db.Text
+  rating        Int      @default(5)
+  displayName   String?  // Optional display name for the review
+  pictureUrl    String?  // Optional profile picture URL
+  twitterHandle String?  // Optional Twitter handle
+  linkedinUrl   String?  // Optional LinkedIn URL
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("reviews")
+}
+
+enum Profieciency {
+  fluent
+  proficient
+  conversational
+}
+
+

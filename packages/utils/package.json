@@ -7,7 +7,22 @@
         "./types": "./src/types.ts",
         "./utils": "./src/utils.ts",
         "./validations": "./src/validations.ts",
-        "./auth": "./src/auth.ts"
+        "./auth": "./src/auth.ts",
+        "./lib/parse-resume-from-pdf": "./src/lib/parse-resume-from-pdf/index.ts",
+        "./lib/parse-resume-from-pdf/read-pdf": "./src/lib/parse-resume-from-pdf/read-pdf.ts",
+        "./lib/parse-resume-from-pdf/group-text-items-into-lines": "./src/lib/parse-resume-from-pdf/group-text-items-into-lines.ts",
+        "./lib/parse-resume-from-pdf/group-lines-into-sections": "./src/lib/parse-resume-from-pdf/group-lines-into-sections.ts",
+        "./lib/parse-resume-from-pdf/extract-resume-from-sections": "./src/lib/parse-resume-from-pdf/extract-resume-from-sections/index.ts",
+        "./lib/parse-resume-from-pdf/types": "./src/lib/parse-resume-from-pdf/types.ts",
+        "./lib/cx": "./src/lib/cx.ts",
+        "./lib/deep-clone": "./src/lib/deep-clone.ts",
+        "./lib/redux/resumeSlice": "./src/lib/redux/resumeSlice.ts",
+        "./lib/redux/types": "./src/lib/redux/types.ts",
+        "./lib/redux/local-storage": "./src/lib/redux/local-storage.ts",
+        "./lib/redux/settingsSlice": "./src/lib/redux/settingsSlice.ts",
+        "./lib/redux/mappers": "./src/lib/redux/mappers.ts",
+        "./lib/redux/hooks": "./src/lib/redux/hooks.tsx",
+        "./lib/redux/store": "./src/lib/redux/store.ts"
     },
     "devDependencies": {
         "@repo/eslint-config": "workspace:*",
@@ -18,14 +33,18 @@
     },
     "dependencies": {
         "@auth/prisma-adapter": "^2.7.4",
+        "@prisma/client": "^6.1.0",
+        "@reduxjs/toolkit": "^2.6.1",
+        "@resume/db": "workspace:*",
         "clsx": "^2.1.1",
         "lucide-react": "^0.469.0",
         "next-auth": "5.0.0-beta.25",
+        "pdfjs": "^2.5.3",
+        "pdfjs-dist": "3.11.174",
+        "prisma": "^6.1.0",
         "react": "^19",
+        "react-redux": "^9.2.0",
         "tailwind-merge": "^2.6.0",
-        "zod": "^3.24.1",
-        "@resume/db": "workspace:*",
-        "@prisma/client": "^6.1.0",
-        "prisma": "^6.1.0"
+        "zod": "^3.24.1"
     }
 }

@@ -19,13 +19,13 @@ export function AppSidebar() {
   }
 
   return (
-    <div className="h-screen  flex items-center">
+    <div className="h-screen flex items-center">
       <Sidebar
         variant="floating"
         collapsible="icon"
         className="h-fit top-1/2 left-0 transform -translate-y-1/2 rounded-lg"
       >
-        <SidebarContent className="bg-[#242627] border-[hsl(0,0,17)] border rounded-md p-2">
+        <SidebarContent className="bg-gray-100 dark:bg-[#242627] dark:border-[hsl(0,0,17)] border rounded-md p-2">
           <Tabs 
             currentStep={currentStep}
             setCurrentStep={setCurrentStep}

@@ -36,6 +36,7 @@ export default function Simple({
           className={cn("space-y-6 p-6", !width && "invisible")}
           style={{
             zoom: (1 / 794) * width,
+            fontFamily: resumeData.fontStyle,
           }}
           ref={contentRef}
           id="resumePreviewContent"
@@ -258,46 +259,51 @@ export default function Simple({
   }
   
   function SkillsSection({ resumeData }: ResumeSectionProps) {
-    const { skills, colorHex, borderStyle } = resumeData;
+    const { skillSections } = resumeData;
   
-    if (!skills?.length) return null;
+    if (!skillSections?.length) return null;
   
     return (
       <>
         <hr
           className="border-2"
           style={{
-            borderColor: colorHex,
+            borderColor: resumeData.colorHex,
           }}
         />
         <div className="break-inside-avoid space-y-3">
           <p
             className="text-lg font-semibold"
             style={{
-              color: colorHex,
+              color: resumeData.colorHex,
             }}
           >
             Skills
           </p>
-          <div className="flex break-inside-avoid flex-wrap gap-2">
-            {skills.map((skill, index) => (
-              <Badge
-                key={index}
-                className="rounded-md bg-black text-white hover:bg-black"
-                style={{
-                  backgroundColor: colorHex,
-                  borderRadius:
-                    borderStyle === BorderStyles.SQUARE
-                      ? "0px"
-                      : borderStyle === BorderStyles.CIRCLE
-                        ? "9999px"
-                        : "8px",
-                }}
-              >
-                {skill}
-              </Badge>
-            ))}
-          </div>
+          {skillSections.map((section, index) => (
+            <div key={index} className="space-y-2">
+              <h3 className="font-bold text-sm">{section.name}</h3>
+              <div className="flex flex-wrap gap-2">
+                {section.skills.map((skill, skillIndex) => (
+                  <Badge
+                    key={skillIndex}
+                    className="rounded-md bg-black text-white hover:bg-black"
+                    style={{
+                      backgroundColor: resumeData.colorHex,
+                      borderRadius:
+                        resumeData.borderStyle === BorderStyles.SQUARE
+                          ? "0px"
+                          : resumeData.borderStyle === BorderStyles.CIRCLE
+                            ? "9999px"
+                            : "8px",
+                    }}
+                  >
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </>
     );

@@ -32,7 +32,7 @@ export default function GeneralFormSchema ({
     }, [form, resumeData, setResumeData])
     
     return (
-        <div className="max-w-xl mx-auto space-y-6">
+        <div className="p-4 space-y-6">
             <div className="space-y-1.5 text-center">
                 <h2 className="text-2xl font-semibold">
                     General Info

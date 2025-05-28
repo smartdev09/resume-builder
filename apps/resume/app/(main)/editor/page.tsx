@@ -5,6 +5,7 @@ import { auth } from "utils/auth";
 import { resumeDataIncludes } from "utils/types";
 import { SidebarProvider } from "@resume/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { mapToResumeValues } from "utils/utils";
 
 interface PageProps {
     searchParams: Promise<{ resumeId?: string}>
@@ -27,7 +28,7 @@ export default async function Home({ searchParams } : PageProps) {
             where: { id: resumeId, userid: session?.user.id},
             include: resumeDataIncludes
         }) : null
-        
+        console.log('resumeToEdit', resumeToEdit)
     return (
         <SidebarProvider >
             <AppSidebar />

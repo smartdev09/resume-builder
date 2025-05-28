@@ -33,7 +33,7 @@ export default function Tabs({ currentStep, setCurrentStep}: BreadcrumbsProps) {
                                     isStopped={activeAnimation !== step.key} 
                                     srcIndex={index} 
                                 /> 
-                                <TooltipContent side="right">
+                                <TooltipContent side="right" className="bg-black text-white dark:bg-white">
                                     {step.title}
                                 </TooltipContent>           
                             </TooltipTrigger>

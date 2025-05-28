@@ -11,10 +11,14 @@ interface TemplateSelectorProps {
 }
 
 const templates = [
+  { name: 'faang', src: "/assets/images/faang.png" },
+  { name: 'ats-approved', src: "/assets/images/ats-approved.png" },
+  { name: 'two-column', src: "/assets/images/two-column.png" },
   { name: 'simple', src: "/assets/images/simple.png" },
   { name: 'diamond', src: "/assets/images/diamond.png" },
   { name: 'it', src: "/assets/images/it.png" },
   { name: 'vibes', src: "/assets/images/vibes.png" },
+
 ];
 
 export default function TemplateSelector({
@@ -37,7 +41,7 @@ export default function TemplateSelector({
   return (
     <div
       className={cn(
-        `h-full overflow-y-auto p-4 bg-secondary [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-gray-700 [&::-webkit-scrollbar-thumb]:bg-gray-500 [&::-webkit-scrollbar-thumb]:rounded-full`,
+        `h-full overflow-y-auto p-4  [&::-webkit-scrollbar]:w-1 [&::-webkit-scrollbar-track]:bg-gray-700 [&::-webkit-scrollbar-thumb]:bg-primary [&::-webkit-scrollbar-thumb]:rounded-full`,
         className
       )}
     >
