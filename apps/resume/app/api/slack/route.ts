@@ -13,7 +13,7 @@ const url = 'https://slack.com/api/chat.postMessage?channel=resume-builder&text=
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer xoxb-7072631420658-8466987379457-XRywlo6Y2xrldaFzJruWe2KF"
+          "Authorization": `Bearer ${process.env.SLACK_BEARER_TOKEN}`
         },
         body: JSON.stringify({ channel: 'resume-builder', text: req.body }),
       });
