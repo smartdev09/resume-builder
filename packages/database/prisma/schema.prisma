@@ -121,3 +121,40 @@ model Education {
 
   @@map("educations")
 }
+model scraped_jobs {
+  id                    Int       @id @default(autoincrement())
+  job_id                String?
+  site                  String?
+  job_url               String?
+  job_url_direct        String?
+  title                 String?
+  company               String?
+  location              String?
+  date_posted           DateTime? @db.Timestamp(6)
+  job_type              String?
+  salary_source         String?
+  interval              String?
+  min_amount            Decimal?  @db.Decimal
+  max_amount            Decimal?  @db.Decimal
+  currency              String?
+  is_remote             Boolean?
+  job_level             String?
+  job_function          String?
+  listing_type          String?
+  emails                String?
+  description           String?
+  company_industry      String?
+  company_url           String?
+  company_logo          String?
+  company_url_direct    String?
+  company_addresses     String?
+  company_num_employees String?
+  company_revenue       String?
+  company_description   String?
+  skills                String?
+  experience_range      String?
+  company_rating        Decimal?  @db.Decimal
+  company_reviews_count Int?
+  vacancy_count         Int?
+  work_from_home_type   String?
+}
