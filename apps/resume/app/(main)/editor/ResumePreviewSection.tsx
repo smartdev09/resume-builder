@@ -2,6 +2,7 @@
 import { ResumeValues } from "utils/validations";
 import BorderStyleButton from "./BorderStyleButton";
 import cn from "@resume/ui/cn";
+import FloatingATSScore from "./shared/FloatingATSScore";
 
 import Basic from "../templates/Basic";
 import Diamond from "../templates/Diamond";
@@ -17,7 +18,8 @@ interface ResumePreviewSectionProps {
     resumeData: ResumeValues;
     setResumeData: (data: ResumeValues) => void;
     className?: string;
-    selectedTemplate: string
+    selectedTemplate: string;
+    onATSDetailsClick?: () => void;
 }
 
 interface Templates {
@@ -28,7 +30,8 @@ export default function ResumePreviewSection({
     resumeData,
     setResumeData,
     className,
-    selectedTemplate
+    selectedTemplate,
+    onATSDetailsClick
 }: ResumePreviewSectionProps) {
 
     const templates: Templates = {
@@ -44,8 +47,19 @@ export default function ResumePreviewSection({
     const TemplateComponent = templates[selectedTemplate] || Basic;
 
     return (
-        <div className={cn("group relative w-full rounded-md flex", className)}>
-             <TemplateComponent resumeData={resumeData} className={" bg-white shadow-md"}/>
+        <div className={cn("group relative w-full rounded-md flex flex-col", className)}>
+            {/* ATS Score Overlay */}
+            {/* <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+                <FloatingATSScore 
+                    resumeData={resumeData}
+                    onViewDetails={onATSDetailsClick}
+                />
+            </div> */}
+            
+            {/* Resume Template */}
+            <div className="flex-1 flex justify-center p-4">
+                <TemplateComponent resumeData={resumeData} className="bg-white shadow-md"/>
+            </div>
         </div>
     )
 }

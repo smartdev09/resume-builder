@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import ResumeEditor from "./ResumeEditor";
+import NewResumeEditor from "./NewResumeEditor";
 import { prisma } from "@resume/db";
 import { auth } from "utils/auth";
 import { resumeDataIncludes } from "utils/types";
@@ -33,7 +33,7 @@ export default async function Home({ searchParams } : PageProps) {
         <SidebarProvider>
             <AppSidebar />
             <SidebarInset>
-                <ResumeEditor resumeToEdit={resumeToEdit}/>
+                <NewResumeEditor resumeToEdit={resumeToEdit}/>
             </SidebarInset>
         </SidebarProvider>
     )
