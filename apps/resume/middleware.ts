@@ -1,19 +1,30 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
- import { auth } from 'utils/auth'
-// This function can be marked `async` if using `await` inside
+import { auth } from "utils/auth"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function middleware(req: NextRequest) {
-    const token = await auth();
+export default async function middleware(request: NextRequest) {
+  const session = await auth()
   
-    if (!token) {
-      return Response.redirect(new URL('/', req.url));
+  // Add pathname to headers for conditional navbar rendering
+  const response = NextResponse.next();
+  response.headers.set('x-pathname', request.nextUrl.pathname);
+
+  // Your existing auth logic here
+  if (request.nextUrl.pathname.startsWith('/editor') && !session?.user) {
+    return NextResponse.redirect(new URL('/api/auth/signin', request.url))
     }
   
-    return NextResponse.next();
+  return response;
 }
 
-// Protect specific routes
 export const config = {
-    matcher: ['/resumes', '/editor'], // Adjust paths as needed
-};
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     */
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+  ],
+}
