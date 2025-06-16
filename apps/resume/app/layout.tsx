@@ -29,7 +29,7 @@ export default async function RootLayout({
   const pathname = headersList.get("x-pathname") || "";
   
   // Hide navbar on editor routes since we have custom header
-  const showNavbar = !pathname.includes('/editor');
+  const showNavbar = !pathname.includes('/editor') && !pathname.includes('/admin');
 
   return (
     <html lang="en" suppressHydrationWarning>
