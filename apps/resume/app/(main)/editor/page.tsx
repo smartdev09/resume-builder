@@ -1,13 +1,14 @@
 import { Metadata } from "next";
-import ResumeEditor from "./ResumeEditor";
+import NewResumeEditor from "./NewResumeEditor";
 import { prisma } from "@resume/db";
 import { auth } from "utils/auth";
 import { resumeDataIncludes } from "utils/types";
-import { SidebarProvider } from "@resume/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@resume/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
+import { mapToResumeValues } from "utils/utils";
 
 interface PageProps {
-    searchParams: Promise<{ resumeId?: string}>
+    searchParams: Promise<{ resumeId?: string }>
 }
 
 export const metadata: Metadata = {
@@ -27,11 +28,13 @@ export default async function Home({ searchParams } : PageProps) {
             where: { id: resumeId, userid: session?.user.id},
             include: resumeDataIncludes
         }) : null
-        
+        console.log('resumeToEdit', resumeToEdit)
     return (
-        <SidebarProvider >
+        <SidebarProvider>
             <AppSidebar />
-            <ResumeEditor resumeToEdit={resumeToEdit}/>
+            <SidebarInset>
+                <NewResumeEditor resumeToEdit={resumeToEdit}/>
+            </SidebarInset>
         </SidebarProvider>
     )
 }

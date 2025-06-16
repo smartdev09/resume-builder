@@ -12,7 +12,7 @@ export default function PersonalInfoForm({
     resumeData, 
     setResumeData
 } : EditorFormProps) {
-    const fields = [{ name: "firstName", label: 'First Name', type: "text", placeholder: "John" }, { name: 'lastName', label: 'Last Name', type: "text", placeholder: 'Doe' }, {name: 'email', label: 'Email', type: "email", placeholder: 'resume@gmail.com' }, { name: 'phone', label: 'Phone', type: "tel", placeholder: '+44312131223' }, { name: 'jobTitle', label: 'Job Title', type: "text", placeholder: 'Software Engineer' }, { name: 'city', label: 'City', type: "text", placeholder: 'Austin' }, { name: 'country', label: 'Country', type: "text", placeholder: 'USA' } ]
+    const fields = [{ name: "firstName", label: 'First Name', type: "text", placeholder: "John" }, { name: 'lastName', label: 'Last Name', type: "text", placeholder: 'Doe' }, {name: 'email', label: 'Email', type: "email", placeholder: 'resume@gmail.com' }, { name: 'phone', label: 'Phone', type: "tel", placeholder: '+44312131223' }, { name: 'jobTitle', label: 'Job Title', type: "text", placeholder: 'Software Engineer' }, { name: 'city', label: 'City', type: "text", placeholder: 'Austin' }, { name: 'country', label: 'Country', type: "text", placeholder: 'USA', }, {name: "linkedin", label: "LinkedIn", type: "text", placeholder: "www.linkedin.com/in/johndoe" }, { name: "github", label: "Github", type: "text", placeholder: "www.github.com/johndoe" }, { name: "website", label: "Personal website", type: "text", placeholder: "https://johndoe.com"}]
     
     const form = useForm<PersonalInfoValues>({
         resolver: zodResolver(personalInfoSchema),
@@ -24,6 +24,9 @@ export default function PersonalInfoForm({
             city: resumeData.city || "",
             country:resumeData.country || "",
             phone: resumeData.phone || "",
+            linkedin: resumeData.linkedin || "",
+            github: resumeData.github,
+            website: resumeData.website
         }
     })
 
@@ -40,24 +43,16 @@ export default function PersonalInfoForm({
     const photoInputRef = useRef<HTMLInputElement>(null);
     
     return (
-        <div className="max-w-xl mx-auto space-y-6">
-            <div className="space-y-1.5 text-center">
-                <h2 className="text-2xl font-semibold">
-                    Personal Info
-                </h2>
-                <p className="text-sm text-muted-foregroun">
-                    Tell us about yourself.
-                </p>
-            </div>  
+        <div className="p-4 sm:p-6 space-y-4">
             <Form {...form}>
-                <form className="space-y-3">
+                <form className="space-y-4">
                     <FormField
                         control={form.control}
                         name="photo"
                         render={({ field: { value, ...fieldValues} }) => (
                             <FormItem>
                                 <FormLabel>Your photo</FormLabel>
-                                    <div className="flex items-center gap-2">
+                                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
                                         <FormControl>
                                             <Input 
                                                 {...fieldValues}
@@ -70,17 +65,20 @@ export default function PersonalInfoForm({
                                                     fieldValues.onChange(file)
                                                 }}
                                                 ref={photoInputRef}
+                                                className="flex-1"
                                             />
                                         </FormControl>
                                         <Button
                                             variant="secondary"
                                             type="button"
+                                            size="sm"
                                             onClick={() => {
                                                 fieldValues.onChange(null);
                                                 if(photoInputRef.current) {
                                                     photoInputRef.current.value = "";
                                                 }
                                             }}
+                                            className="w-full sm:w-auto"
                                         >
                                             Remove
                                         </Button>
@@ -90,23 +88,24 @@ export default function PersonalInfoForm({
                         )}
                     />
 
-                    {fields && fields.map(({ name, label, type, placeholder }, index) => (
-                        <FormField
-                            key={index}
-                            control={form.control}
-                            name={name as keyof Omit<PersonalInfoValues, "photo">}
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>{label}</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} type={type} placeholder={placeholder} />
-                                    </FormControl>
-                                    <FormMessage /> 
-                                </FormItem>
-                            )}
-                        />
-                    ))}
-
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {fields && fields.map(({ name, label, type, placeholder }, index) => (
+                            <FormField
+                                key={index}
+                                control={form.control}
+                                name={name as keyof Omit<PersonalInfoValues, "photo">}
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>{label}</FormLabel>
+                                        <FormControl>
+                                            <Input {...field} type={type} placeholder={placeholder} />
+                                        </FormControl>
+                                        <FormMessage /> 
+                                    </FormItem>
+                                )}
+                            />
+                        ))}
+                    </div>
                 </form>
             </Form>
         </div>

@@ -5,6 +5,7 @@ import { Checkbox } from "@resume/ui/checkbox";
 import { JobFunctionSelect } from "@/components/job-function-select";
 import { HelpCircle } from "lucide-react";
 import { toast } from "@resume/ui/sonner";
+import { useState, useEffect } from "react";
 
 interface JobPreferencesStepProps {
   formData: {
@@ -25,7 +26,42 @@ export function JobPreferencesStep({
   updateFormData,
   onNext
 }: JobPreferencesStepProps) {
-  const jobTypes = ["Full-time", "Contract", "Part-time", "Internship"];
+  const [jobTypes, setJobTypes] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch job types from database
+  useEffect(() => {
+    const fetchJobTypes = async () => {
+      try {
+        const response = await fetch('/api/categories?type=JOB_TYPE');
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Extract job type names from subcategories
+          const types: string[] = [];
+          data.categories.forEach((category: any) => {
+            category.subcategories.forEach((subcat: any) => {
+              types.push(subcat.name);
+            });
+          });
+          
+          setJobTypes(types);
+        } else {
+          console.error('Failed to fetch job types');
+          // Fallback to hardcoded data
+          setJobTypes(["Full-time", "Contract", "Part-time", "Internship"]);
+        }
+      } catch (error) {
+        console.error('Error fetching job types:', error);
+        // Fallback to hardcoded data
+        setJobTypes(["Full-time", "Contract", "Part-time", "Internship"]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJobTypes();
+  }, []);
 
   const validateForm = () => {
     const missingFields = [];
@@ -72,25 +108,29 @@ export function JobPreferencesStep({
           <label className="block font-medium text-card-foreground">
             <span className="text-destructive">*</span> Job Type
           </label>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-            {jobTypes.map((type) => (
-              <div key={type} className="flex items-center">
-                <div className="flex items-center h-12 px-4 border border-border rounded-md bg-muted">
-                  <Checkbox
-                    id={`job-type-${type}`}
-                    checked={formData.jobType === type}
-                    onCheckedChange={() => {
-                      updateFormData({ jobType: type });
-                    }}
-                    className="mr-2"
-                  />
-                  <label htmlFor={`job-type-${type}`} className="text-sm text-muted-foreground">
-                    {type}
-                  </label>
+          {loading ? (
+            <div className="text-muted-foreground">Loading job types...</div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {jobTypes.map((type) => (
+                <div key={type} className="flex items-center">
+                  <div className="flex items-center h-12 px-4 border border-border rounded-md bg-muted">
+                    <Checkbox
+                      id={`job-type-${type}`}
+                      checked={formData.jobType === type}
+                      onCheckedChange={() => {
+                        updateFormData({ jobType: type });
+                      }}
+                      className="mr-2"
+                    />
+                    <label htmlFor={`job-type-${type}`} className="text-sm text-muted-foreground">
+                      {type}
+                    </label>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-2">

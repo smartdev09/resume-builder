@@ -2,9 +2,41 @@
 @tailwind components;
 @tailwind utilities;
 
+.perspective-1000 {
+  perspective: 2000px;
+}
+
+.editor-container {
+  transform-style: preserve-3d;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.editor-container::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 12px;
+  opacity: 0.3;
+}
+
+/* Add depth to editor content */
+.editor-content {
+  transform: translateZ(2px);
+}
+
+/* Enhanced shadow effect */
+.editor-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 0 0% 100% 1;
     --foreground: 222.2 47.4% 11.2%;
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
@@ -14,9 +46,9 @@
     --input: 214.3 31.8% 91.4%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 47.4% 11.2%;
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
+    --primary:260, 55%, 55%;
+    --primary-foreground: 0 0% 100% 1;
+    --secondary: 0 0% 100% 1;
     --secondary-foreground: 222.2 47.4% 11.2%;
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
@@ -35,7 +67,7 @@
   }
 
   .dark {
-    --background: 224 71% 4%;
+    --background: 240 6% 10% 1;
     --foreground: 213 31% 91%;
     --muted: 223 47% 11%;
     --muted-foreground: 215.4 16.3% 56.9%;
@@ -47,9 +79,9 @@
     --input: 216 34% 17%;
     --card: 224 71% 4%;
     --card-foreground: 213 31% 91%;
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 1.2%;
-    --secondary: 222.2 47.4% 11.2%;
+    --primary: 260, 55%, 55%;
+    --primary-foreground:  0 0% 100% 1;
+    --secondary: 240 6% 10% 1;
     --secondary-foreground: 210 40% 98%;
     --destructive: 0 63% 31%;
     --destructive-foreground: 210 40% 98%;

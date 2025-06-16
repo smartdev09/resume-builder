@@ -11,7 +11,7 @@ export async function saveResume(values: ResumeValues) {
 
     console.log('values', values)
     
-    const { photo, workExperiences, educations, ...resumeValues } = resumeSchema.parse(values);
+    const { photo, workExperiences, educations, projects, languages, certifications, skillSections, ...resumeValues } = resumeSchema.parse(values);
 
     console.log('RV', resumeValues)
 
@@ -51,23 +51,57 @@ export async function saveResume(values: ResumeValues) {
             data: {
                 ...resumeValues,
                 photoUrl: newPhotoUrl,
-                WorkExperience: {
+                
+                workExperience: {
                     deleteMany: {},
                     create: workExperiences?.map((exp) => ({
                         ...exp,
                         startDate: exp.startDate ? new Date(exp.startDate  + "T00:00:00.000Z") : undefined,
                         endDate: exp.endDate ? new Date(exp.endDate  + "T00:00:00.000Z") : undefined,
-
-                     }))
+                    }))
                 },
-                Education: {
+                education: {
                     deleteMany: {},
                     create: educations?.map((edu) => ({
-                        ...edu,
+                        degree: edu.degree,
+                        school: edu.school,
                         startDate: edu.startDate ? new Date(edu.startDate  + "T00:00:00.000Z") : undefined,
                         endDate: edu.endDate ? new Date(edu.endDate  + "T00:00:00.000Z" ) : undefined,
-
-                     }))
+                    }))
+                },
+                projects: {
+                    // deleteMany: {},
+                    create: projects?.map((project) => ({
+                        ...project,
+                        startDate: project.startDate ? new Date(project.startDate  + "T00:00:00.000Z") : undefined,
+                        endDate: project.endDate ? new Date(project.endDate  + "T00:00:00.000Z") : undefined,
+                        description: project.description
+                    }))
+                },
+                certificates: {
+                    deleteMany: {},
+                    create: certifications?.map((certificate) => ({
+                        ...certificate,
+                        completionDate: certificate.completionDate ? new Date(certificate.completionDate  + "T00:00:00.000Z") : undefined,
+                        source: certificate.source,
+                        link: certificate.link
+                    }))
+                },
+                languages: {
+                    deleteMany: {},
+                    create: languages?.map((language) => ({
+                        ...language,
+                        name: language.name,
+                        proficiency: language.proficiency
+                    }))
+                },
+                skillSections: {
+                    deleteMany: {},
+                    create: skillSections?.map((section) => ({
+                        name: section.name,
+                        skills: section.skills,
+                        order: section.order
+                    }))
                 },
                 updatedAt: new Date()
             }
@@ -80,20 +114,54 @@ export async function saveResume(values: ResumeValues) {
               selectedTemplate: 'simple',
               userid: session.user.id!,
               photoUrl: newPhotoUrl,
-              WorkExperience: {
+              workExperience: {
                 create: workExperiences?.map((exp) => ({
                   ...exp,
                   startDate: exp.startDate ? new Date(exp.startDate  + "T00:00:00.000Z") : undefined,
                   endDate: exp.endDate ? new Date(exp.endDate  + "T00:00:00.000Z") : undefined,
                 })),
               },
-              Education: {
+              education: {
                 create: educations?.map((edu) => ({
-                  ...edu,
+                  degree: edu.degree,
+                  school: edu.school,
                   startDate: edu.startDate ? new Date(edu.startDate  + "T00:00:00.000Z") : undefined,
                   endDate: edu.endDate ? new Date(edu.endDate  + "T00:00:00.000Z") : undefined,
                 })),
               },
+              projects: {
+                // deleteMany: {},
+                create: projects?.map((project) => ({
+                    ...project,
+                    startDate: project.startDate ? new Date(project.startDate  + "T00:00:00.000Z") : undefined,
+                    endDate: project.endDate ? new Date(project.endDate  + "T00:00:00.000Z") : undefined,
+                    description: project.description
+                 }))
+            },
+            certificates: {
+                // deleteMany: {},
+                create: certifications?.map((certificate) => ({
+                    ...certificate,
+                    completionDate: certificate.completionDate ? new Date(certificate.completionDate  + "T00:00:00.000Z") : undefined,
+                    source: certificate.source,
+                    link: certificate.link
+                }))
+            },
+            languages: {
+                // deleteMany: {},
+                create: languages?.map((language) => ({
+                    ...language,
+                    name: language.name,
+                    proficiency: language.proficiency
+                }))
+            },
+            skillSections: {
+                create: skillSections?.map((section) => ({
+                    name: section.name,
+                    skills: section.skills,
+                    order: section.order
+                }))
+            },
             },
           });
     }

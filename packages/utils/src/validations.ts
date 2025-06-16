@@ -24,6 +24,9 @@ export const personalInfoSchema = z.object({
   country: optionalString,
   phone: optionalString,
   email: optionalString,
+  linkedin: optionalString,
+  github: optionalString,
+  website: optionalString,
   photo: z
   .custom<File | undefined>()
   .refine(
@@ -65,10 +68,18 @@ export const educationSchema = z.object({
 
 export type EducationValues = z.infer<typeof educationSchema>
 
-export const skillsSchema = z.object({
-  skills: z.array(z.string().trim()).optional()
-})
+export const skillSectionSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().trim().min(1, "Section name is required"),
+  skills: z.array(z.string().trim()).default([]),
+  order: z.number().default(0)
+});
 
+export const skillsSchema = z.object({
+  skillSections: z.array(skillSectionSchema).default([])
+});
+
+export type SkillSectionValues = z.infer<typeof skillSectionSchema>;
 export type SkillsValues = z.infer<typeof skillsSchema>;
 
 export const summarySchema = z.object({
@@ -77,15 +88,62 @@ export const summarySchema = z.object({
 
 export type SummaryValues = z.infer<typeof summarySchema>
 
+export const projectSchema = z.object({
+  projects: z.array(
+    z.object({
+      name: optionalString,
+      role: optionalString,
+      startDate: optionalString,
+      endDate: optionalString,
+      description: optionalString
+    })
+  )
+  .optional()
+})
+
+export type ProjectValues = z.infer<typeof projectSchema>
+
+export const languageSchema = z.object({
+  languages: z.array(
+    z.object({
+      name: optionalString,
+      proficiency: z.enum(["fluent", "proficient", "conversational"]).optional()
+    })
+  )
+  .optional()
+});
+
+export type LanguageValues = z.infer<typeof languageSchema>
+
+export const certificationSchema = z.object({
+  certifications: z.array(
+    z.object({
+      name: optionalString,
+      completionDate: optionalString,
+      source: optionalString,
+      link: z.string().url("Invalid URL").optional().or(z.literal("")),
+    })
+  ).optional()
+});
+
+export type CertificationValues = z.infer<typeof certificationSchema>;
+
 export const resumeSchema = z.object({
   ...generalInfoSchema.shape,
   ...personalInfoSchema.shape,
   ...workExperienceSchema.shape,
   ...educationSchema.shape,
-  ...skillsSchema.shape,
+  skillSections: z.array(skillSectionSchema).default([]),
   ...summarySchema.shape,
-  colorHex: optionalString,
+  ...projectSchema.shape,
+  ...languageSchema.shape,
+  ...certificationSchema.shape,
+  primaryColorHex: optionalString,
+  secondaryColorHex: optionalString,
+  primaryFontSize: optionalString,
+  secondaryFontSize: optionalString,
   borderStyle: optionalString,
+  fontStyle: optionalString,
 })
 
 export type ResumeValues = Omit<z.infer<typeof resumeSchema>, "photo"> & {
