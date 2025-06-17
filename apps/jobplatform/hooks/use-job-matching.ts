@@ -25,10 +25,14 @@ export const useJobMatching = () => {
       console.log("Groq client not available, using keyword matching");
       toast.info("Using advanced keyword matching for job analysis");
       const keywordMatches = KeywordMatchingService.matchJobs(jobs, userPreferences);
-      return keywordMatches.map(match => match.job);
+      return keywordMatches.map(match => ({
+        ...match.job,
+        matchScore: match.score,
+        matchReason: match.reason
+      }));
     }
 
-    const BATCH_SIZE = 3;
+    const BATCH_SIZE = 3; // Smaller batches to avoid rate limits
     const allMatches: JobMatch[] = [];
     const totalBatches = Math.ceil(jobs.length / BATCH_SIZE);
     
@@ -42,30 +46,46 @@ export const useJobMatching = () => {
       const batchNumber = Math.floor(i/BATCH_SIZE) + 1;
       
       setBatchProgress({ current: batchNumber, total: totalBatches });
-      
-      if (!isLoadMore) {
-        toast.info(`AI analyzing jobs batch ${batchNumber}/${totalBatches}...`);
+
+      try {
+        const batchMatches = await aiService.processBatch(batch, userPreferences);
+        allMatches.push(...batchMatches);
+
+        // Show incremental results after each batch for better UX
+        if (allMatches.length > 0 && !isLoadMore && onProgressUpdate) {
+          const sortedMatches = [...allMatches].sort((a, b) => b.score - a.score);
+          const currentMatches = sortedMatches.map(match => ({
+            ...match.job,
+            matchScore: match.score,
+            matchReason: match.reason
+          }));
+          onProgressUpdate(currentMatches);
+        }
+      } catch (error) {
+        console.error(`Error processing batch ${batchNumber}:`, error);
+        
+        // If rate limit error, fall back to keyword matching for this batch
+        if (error && typeof error === 'object' && 'status' in error && error.status === 429) {
+          console.log(`Rate limit hit on batch ${batchNumber}, using keyword matching as fallback`);
+          const keywordMatches = KeywordMatchingService.matchJobs(batch, userPreferences);
+          allMatches.push(...keywordMatches);
+          
+          if (!isLoadMore) {
+            toast.info(`Batch ${batchNumber}: Using keyword matching due to rate limits`);
+          }
+        }
+        // Continue with next batch instead of failing entirely
       }
 
-      const batchMatches = await aiService.processBatch(batch, userPreferences);
-      allMatches.push(...batchMatches);
-
-      // Show incremental results after each batch
-      if (allMatches.length > 0 && !isLoadMore && onProgressUpdate) {
-        allMatches.sort((a, b) => b.score - a.score);
-        const currentMatches = allMatches.map(match => match.job);
-        onProgressUpdate(currentMatches);
-      }
-
-      // Delay between batches to avoid rate limits
+      // Longer delay between batches to avoid rate limits
       if (i + BATCH_SIZE < jobs.length) {
-        await sleep(3000);
+        await sleep(5000); // Increased to 5 seconds to respect rate limits
       }
     }
 
     setProcessingBatch(false);
     
-    // Sort by score and return top matches
+    // Sort by score and return all matches (not just top matches)
     allMatches.sort((a, b) => b.score - a.score);
     
     console.log(`Job matching found ${allMatches.length} matches out of ${jobs.length} jobs`);
@@ -75,7 +95,12 @@ export const useJobMatching = () => {
       reason: m.reason 
     })));
 
-    return allMatches.map(match => match.job);
+    // Add match scores and reasons to the job objects
+    return allMatches.map(match => ({
+      ...match.job,
+      matchScore: match.score,
+      matchReason: match.reason
+    }));
   }, []);
 
   return {
