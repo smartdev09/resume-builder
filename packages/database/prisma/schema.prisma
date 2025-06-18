@@ -20,6 +20,8 @@ model User {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   onboardingSubmissions OnboardingSubmission[]
+  jobPreferences UserJobPreferences[]
+  jobInteractions JobInteraction[]
 
   @@map("users")
 }
@@ -237,6 +239,7 @@ model scraped_jobs {
   company_reviews_count Int?
   vacancy_count         Int?
   work_from_home_type   String?
+  interactions          JobInteraction[]
 }
 // Admin Portal Models for Onboarding Field Management
 model OnboardingField {
@@ -325,4 +328,45 @@ enum CategoryType {
   JOB_TYPE
   LOCATION
   WORK_AUTHORIZATION
+}
+
+// User Job Preferences - Stores completed onboarding preferences
+model UserJobPreferences {
+  id                String    @id @default(cuid())
+  userId            String
+  jobFunction       String    // Job function the user is looking for
+  jobType           String    // Full-time, Part-time, Contract, etc.
+  location          String    // Preferred location
+  openToRemote      Boolean   @default(false) // Open to remote work
+  needsSponsorship  Boolean   @default(false) // Needs H1B sponsorship
+  isActive          Boolean   @default(true) // Whether this preference set is active
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@map("user_job_preferences")
+}
+
+// Job Interactions - Stores user interactions with jobs (liked, applied, saved)
+model JobInteraction {
+  id              String            @id @default(cuid())
+  userId          String
+  jobId           Int               // References scraped_jobs.id
+  interactionType JobInteractionType
+  notes           String?           // Optional notes from user
+  appliedAt       DateTime?         // When they applied (if applicable)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job             scraped_jobs      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, jobId, interactionType]) // Prevent duplicate interactions
+  @@map("job_interactions")
+}
+
+enum JobInteractionType {
+  LIKED
+  APPLIED
+  SAVED_EXTERNAL
+  VIEWED
 }

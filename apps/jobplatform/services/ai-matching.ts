@@ -63,7 +63,17 @@ LOCATION PRIORITY: Jobs must either be in "${userPreferences.location}" OR offer
 REASON FORMAT: Brief explanation mentioning job function, location/remote status, and other key matches
 
 Return JSON array:
-[{"id": 123, "score": 85, "reason": "Backend Developer role, Remote available, Full-time position"}]`;
+[{"id": 123, "score": 85, "reason": "Backend Developer role, Remote available, Full-time position"}]
+
+CRITICAL: Your response must be ONLY a valid JSON array. No additional text, explanations, or formatting.
+
+Example response:
+[
+  {"id": 1, "score": 85, "reason": "Full-stack role, exact location match"},
+  {"id": 2, "score": 78, "reason": "Backend position, remote available"}
+]
+
+Begin your response with [ and end with ]`;
   }
 
   async processBatch(
@@ -95,7 +105,7 @@ Return JSON array:
           messages: [
             {
               role: "system",
-              content: "You are a precise job matching AI. Focus heavily on job function relevance. Return only JSON array for jobs that closely match the requested job function."
+              content: "You are a precise job matching AI. CRITICAL: You must respond ONLY with a valid JSON array. Do not include any explanatory text, markdown formatting, or other content. Focus heavily on job function relevance. Return only a JSON array format: [{'id': number, 'score': number, 'reason': 'brief explanation'}] for jobs that closely match the requested job function."
             },
             {
               role: "user",
@@ -114,32 +124,68 @@ Return JSON array:
           break;
         }
 
+        let cleanedResponse = "";
         try {
           // Clean up the response to ensure it's valid JSON
-          let cleanedResponse = responseText.trim();
+          cleanedResponse = responseText.trim();
           
           // Remove any markdown formatting
           cleanedResponse = cleanedResponse.replace(/```json/g, '').replace(/```/g, '');
           
-          // Find JSON array in the response
-          const jsonStart = cleanedResponse.indexOf('[');
-          const jsonEnd = cleanedResponse.lastIndexOf(']') + 1;
+          // Find JSON array in the response - be more thorough
+          let jsonStart = cleanedResponse.indexOf('[');
+          let jsonEnd = cleanedResponse.lastIndexOf(']') + 1;
           
-          if (jsonStart !== -1 && jsonEnd !== -1) {
+          // If no JSON array found, try to find JSON objects wrapped in array
+          if (jsonStart === -1) {
+            // Look for individual JSON objects and wrap them in an array
+            const objectMatches = cleanedResponse.match(/\{[^}]*\}/g);
+            if (objectMatches && objectMatches.length > 0) {
+              cleanedResponse = '[' + objectMatches.join(',') + ']';
+              jsonStart = 0;
+              jsonEnd = cleanedResponse.length;
+            }
+          }
+          
+          if (jsonStart !== -1 && jsonEnd !== -1 && jsonEnd > jsonStart) {
             cleanedResponse = cleanedResponse.substring(jsonStart, jsonEnd);
+          } else {
+            // If no valid JSON structure found, log the response and continue
+            console.error("No valid JSON array found in response:", responseText.substring(0, 200));
+            throw new Error("No valid JSON structure found in AI response");
+          }
+
+          // Validate that we have a proper JSON string before parsing
+          if (!cleanedResponse.startsWith('[') || !cleanedResponse.endsWith(']')) {
+            console.error("Cleaned response is not a valid JSON array:", cleanedResponse.substring(0, 100));
+            throw new Error("Response is not a valid JSON array");
           }
 
           const aiMatches: Array<{id: number, score: number, reason: string}> = JSON.parse(cleanedResponse);
           
+          // Validate the parsed result
+          if (!Array.isArray(aiMatches)) {
+            console.error("Parsed result is not an array:", typeof aiMatches);
+            throw new Error("Parsed result is not an array");
+          }
+          
           // Map matches back to full job objects
           aiMatches.forEach(match => {
-            const job = batch.find(j => j.id === match.id);
-            if (job && match.score >= 70) {
-              matches.push({
-                job,
-                score: match.score,
-                reason: match.reason
-              });
+            // Validate each match object
+            if (typeof match === 'object' && match !== null && 
+                typeof match.id === 'number' && 
+                typeof match.score === 'number' && 
+                typeof match.reason === 'string') {
+              const job = batch.find(j => j.id === match.id);
+              if (job && match.score >= 70) {
+                matches.push({
+                  job,
+                  score: match.score,
+                  reason: match.reason
+                });
+              }
+            } else {
+              console.warn("Invalid match object:", match);
             }
           });
 
@@ -148,7 +194,18 @@ Return JSON array:
 
         } catch (parseError) {
           console.error("Error parsing response:", parseError);
-          break;
+          console.error("Original response:", responseText.substring(0, 500));
+          console.error("Cleaned response:", cleanedResponse?.substring(0, 300));
+          retryCount++;
+          
+          // If it's the last retry, break and use keyword matching
+          if (retryCount >= maxRetries) {
+            console.log("Max retries reached, will fall back to keyword matching");
+            break;
+          }
+          
+          // Add a small delay before retry
+          await this.sleep(2000);
         }
 
       } catch (error: unknown) {
@@ -163,7 +220,16 @@ Return JSON array:
           continue;
         } else {
           console.error("Non-rate-limit API error:", error);
-          break;
+          retryCount++;
+          
+          // If it's the last retry, break and use keyword matching
+          if (retryCount >= maxRetries) {
+            console.log("Max retries reached due to API errors, will fall back to keyword matching");
+            break;
+          }
+          
+          // Add a small delay before retry for non-rate-limit errors too
+          await this.sleep(3000);
         }
       }
     }

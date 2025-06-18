@@ -12,6 +12,8 @@ import { Button } from "@resume/ui/button";
 import { toast } from "@resume/ui/sonner";
 import { useJobMatching } from "@/hooks/use-job-matching";
 import { ScrapedJob, FormData, UserPreferences } from "../types/job-types";
+import { UserPreferencesService } from "../services/user-preferences-service";
+import { JobInteractionsService } from "../services/job-interactions-service";
 
 export function OnboardingSteps() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -29,6 +31,9 @@ export function OnboardingSteps() {
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [groqClient, setGroqClient] = useState<Groq | null>(null);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("user@example.com"); // TODO: Get from authentication
+  const [loadingExistingPreferences, setLoadingExistingPreferences] = useState(true);
+  const [isAutoLoaded, setIsAutoLoaded] = useState(false); // Track if jobs were auto-loaded from preferences
 
   const { matchJobs, processingBatch, batchProgress } = useJobMatching();
 
@@ -50,6 +55,135 @@ export function OnboardingSteps() {
     
     initializeGroq();
   }, []);
+
+  // Check for existing user preferences when component loads
+  useEffect(() => {
+    const loadExistingPreferences = async () => {
+      try {
+        const existingPreferences = await UserPreferencesService.getPreferences(userEmail);
+        
+        if (existingPreferences) {
+          console.log("Found existing preferences:", existingPreferences);
+          
+          // Populate form data with existing preferences
+          setFormData({
+            jobFunction: existingPreferences.jobFunction,
+            jobType: existingPreferences.jobType,
+            location: existingPreferences.location,
+            openToRemote: existingPreferences.openToRemote,
+            workAuthorization: {
+              h1bSponsorship: existingPreferences.needsSponsorship,
+            },
+          });
+
+          // Auto-load jobs based on existing preferences
+          await autoLoadJobsFromPreferences(existingPreferences);
+        } else {
+          console.log("No existing preferences found, starting fresh onboarding");
+        }
+      } catch (error) {
+        console.error("Error loading existing preferences:", error);
+      } finally {
+        setLoadingExistingPreferences(false);
+      }
+    };
+
+    loadExistingPreferences();
+  }, [userEmail]);
+
+  // Auto-load jobs based on saved preferences
+  const autoLoadJobsFromPreferences = async (preferences: any) => {
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch("/api/scrape", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
+      const allJobs = await response.json();
+      console.log(`Auto-loading jobs: Fetched ${allJobs.length} total jobs from API`);
+      
+      if (!allJobs || allJobs.length === 0) {
+        console.warn("No jobs found in the database for auto-loading");
+        return;
+      }
+
+      const userPreferences = {
+        jobFunction: preferences.jobFunction,
+        jobType: preferences.jobType,
+        location: preferences.location,
+        openToRemote: preferences.openToRemote,
+        needsSponsorship: preferences.needsSponsorship
+      };
+
+      let matchedJobsList: ScrapedJob[] = [];
+      let processedCount = 0;
+      const TARGET_INITIAL_JOBS = 10;
+      const BATCH_SIZE = 25;
+
+      const handleProgressUpdate = (currentMatches: ScrapedJob[]) => {
+        setMatchedJobs(currentMatches);
+        if (!onboardingComplete) {
+          setOnboardingComplete(true);
+        }
+      };
+
+      // Process jobs in batches for auto-loading
+      for (let i = 0; i < allJobs.length && matchedJobsList.length < TARGET_INITIAL_JOBS; i += BATCH_SIZE) {
+        const batch = allJobs.slice(i, i + BATCH_SIZE);
+        console.log(`Auto-loading: Processing batch ${Math.floor(i/BATCH_SIZE) + 1}, jobs ${i + 1}-${Math.min(i + BATCH_SIZE, allJobs.length)}`);
+        
+        const batchMatches = await matchJobs(batch, userPreferences, groqClient, true);
+        matchedJobsList = [...matchedJobsList, ...batchMatches];
+        processedCount += batch.length;
+        
+        // Update UI with current matches
+        handleProgressUpdate(matchedJobsList.slice(0, TARGET_INITIAL_JOBS));
+        
+        if (matchedJobsList.length >= TARGET_INITIAL_JOBS) {
+          break;
+        }
+      }
+
+      // Store remaining data for "Load More" functionality
+      const remainingJobs = allJobs.slice(processedCount);
+      const remainingMatches = matchedJobsList.slice(TARGET_INITIAL_JOBS);
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).remainingJobs = remainingJobs;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).remainingMatches = remainingMatches;
+      
+      const hasMore = remainingJobs.length > 0 || remainingMatches.length > 0;
+      setHasMoreJobs(hasMore);
+      
+      const finalMatches = matchedJobsList.slice(0, TARGET_INITIAL_JOBS);
+      setMatchedJobs(finalMatches);
+      setOnboardingComplete(true);
+      setIsAutoLoaded(true);
+      
+      console.log(`Auto-loaded ${finalMatches.length} jobs based on saved preferences for ${userPreferences.jobFunction} in ${userPreferences.location}`);
+      
+      // Show success message to user
+      if (finalMatches.length > 0) {
+        setTimeout(() => {
+          // Delay to show the banner after the UI loads
+        }, 100);
+      }
+      
+    } catch (error) {
+      console.error("Error auto-loading jobs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const updateFormData = (data: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -83,6 +217,19 @@ export function OnboardingSteps() {
     setIsLoading(true);
     
     try {
+      // Save user preferences to database
+      const preferences = convertToUserPreferences(formData);
+      try {
+        await UserPreferencesService.savePreferences({
+          ...preferences,
+          userEmail
+        });
+        console.log("User preferences saved successfully");
+      } catch (prefError) {
+        console.warn("Failed to save preferences to database:", prefError);
+        // Continue with job matching even if preferences save fails
+      }
+
       const response = await fetch("/api/scrape", {
         method: "GET",
         headers: {
@@ -303,6 +450,18 @@ export function OnboardingSteps() {
     />,
   ];
 
+  // Show loading state while checking for existing preferences
+  if (loadingExistingPreferences) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Checking for saved preferences...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {onboardingComplete ? (
@@ -312,6 +471,7 @@ export function OnboardingSteps() {
           hasMoreJobs={hasMoreJobs}
           isLoading={isLoading || processingBatch}
           userPreferences={convertToUserPreferences(formData)}
+          isAutoLoaded={isAutoLoaded}
         />
       ) : (
         <>
