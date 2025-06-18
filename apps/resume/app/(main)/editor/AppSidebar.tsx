@@ -21,7 +21,7 @@ export function AppSidebar() {
   };
 
   const handleJobPlatformNavigation = () => {
-    router.push('/jobplatform');
+    router.push('http://localhost:3001');
   };
 
   return (
