@@ -5,6 +5,7 @@ import { ScrapedJob } from "../types/job-types";
 import { Search, MapPin, Clock, Building2, Briefcase, Filter, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar } from "lucide-react";
 import { Button } from "@resume/ui/button";
 import { Badge } from "@resume/ui/badge";
+import { formatTimeAgoWithTooltip } from "../lib/time-utils";
 
 interface JobListingPageProps {
   jobs: ScrapedJob[];
@@ -19,9 +20,7 @@ interface JobCardProps {
 }
 
 const JobCard = ({ job, matchScore = Math.floor(Math.random() * 30) + 70 }: JobCardProps) => {
-  const timeAgo = job.date_posted 
-    ? Math.floor((Date.now() - new Date(job.date_posted).getTime()) / (1000 * 60 * 60))
-    : Math.floor(Math.random() * 24) + 1;
+  const { timeAgo, exactDate } = formatTimeAgoWithTooltip(job.date_posted);
 
   const getMatchColor = (score: number) => {
     if (score >= 90) return "text-emerald-400";
@@ -42,7 +41,7 @@ const JobCard = ({ job, matchScore = Math.floor(Math.random() * 30) + 70 }: JobC
         <div className="flex-1 pr-6">
           <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
             <Calendar className="w-4 h-4" />
-            {timeAgo} hours ago
+            <span title={exactDate}>{timeAgo}</span>
             <button className="ml-auto text-gray-400 hover:text-gray-600">
               <MoreHorizontal className="w-5 h-5" />
             </button>

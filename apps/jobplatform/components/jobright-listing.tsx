@@ -1,11 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScrapedJob } from "../types/job-types";
 import { MapPin, Clock, Building2, Briefcase, Filter, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar, MessageSquare, X } from "lucide-react";
 import { Button } from "@resume/ui/button";
 import { Badge } from "@resume/ui/badge";
 import { toast } from "@resume/ui/sonner";
+import { formatTimeAgoWithTooltip } from "../lib/time-utils";
+import { FilterDropdowns } from "./filter-dropdowns";
+import { JobInteractionsService, JobInteractionType } from "../services/job-interactions-service";
+import { WelcomeBackBanner } from "./welcome-back-banner";
+import { PreferencesUpdateModal } from "./preferences-update-modal";
 
 interface JobListingPageProps {
   jobs: ScrapedJob[];
@@ -19,6 +24,7 @@ interface JobListingPageProps {
     openToRemote: boolean;
     needsSponsorship: boolean;
   };
+  isAutoLoaded?: boolean; // Indicates if jobs were loaded from saved preferences
 }
 
 interface JobCardProps {
@@ -37,9 +43,7 @@ const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onAp
   
   const actualMatchScore = job.matchScore || matchScore || Math.floor(Math.random() * 30) + 70;
   
-  const timeAgo = job.date_posted 
-    ? Math.floor((Date.now() - new Date(job.date_posted).getTime()) / (1000 * 60 * 60))
-    : Math.floor(Math.random() * 24) + 1;
+  const { timeAgo, exactDate } = formatTimeAgoWithTooltip(job.date_posted);
 
   const getMatchColor = (score: number) => {
     if (score >= 90) return "text-emerald-500";
@@ -60,7 +64,7 @@ const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onAp
         <div className="flex-1 pr-6">
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <Calendar className="w-4 h-4" />
-            {timeAgo} hours ago
+            <span title={exactDate}>{timeAgo}</span>
             <button className="ml-auto text-muted-foreground hover:text-foreground">
               <MoreHorizontal className="w-5 h-5" />
             </button>
@@ -185,14 +189,51 @@ const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onAp
   );
 };
 
-export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, userPreferences }: JobListingPageProps) {
+export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, userPreferences, isAutoLoaded }: JobListingPageProps) {
   const [activeTab, setActiveTab] = useState<'jobs' | 'liked' | 'applied' | 'external'>('jobs');
   const [likedJobs, setLikedJobs] = useState<Set<number>>(new Set());
   const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
   const [externalJobs, setExternalJobs] = useState<Set<number>>(new Set());
+  const [userEmail] = useState<string>("user@example.com"); // TODO: Get from authentication
+  const [interactionsLoaded, setInteractionsLoaded] = useState(false);
+  const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+  const [currentUserPreferences, setCurrentUserPreferences] = useState(userPreferences);
+
+  // Load existing job interactions when component mounts or jobs change
+  useEffect(() => {
+    const loadInteractions = async () => {
+      if (jobs.length === 0 || interactionsLoaded) return;
+
+      try {
+        const jobIds = jobs.map(job => job.id);
+        const statusMap = await JobInteractionsService.getJobInteractionStatus(userEmail, jobIds);
+
+        const liked = new Set<number>();
+        const applied = new Set<number>();
+        const external = new Set<number>();
+
+        Object.entries(statusMap).forEach(([jobId, interactions]) => {
+          const id = parseInt(jobId);
+          if (interactions.includes('LIKED')) liked.add(id);
+          if (interactions.includes('APPLIED')) applied.add(id);
+          if (interactions.includes('SAVED_EXTERNAL')) external.add(id);
+        });
+
+        setLikedJobs(liked);
+        setAppliedJobs(applied);
+        setExternalJobs(external);
+        setInteractionsLoaded(true);
+      } catch (error) {
+        console.error('Failed to load job interactions:', error);
+        // Continue with empty sets if loading fails
+        setInteractionsLoaded(true);
+      }
+    };
+
+    loadInteractions();
+  }, [jobs, userEmail, interactionsLoaded]);
   
   // Filter states
-  const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     workType: [] as string[], // Remote, Onsite, Hybrid
     jobLevel: [] as string[], // Entry Level, Mid Level, Senior Level
@@ -314,46 +355,84 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
            (filters.minMatchScore > 0 ? 1 : 0);
   };
 
-  // Handle job actions
-  const handleLikeJob = (jobId: number) => {
+  // Handle job actions with database persistence
+  const handleLikeJob = async (jobId: number) => {
     const job = jobs.find(j => j.id === jobId);
-    setLikedJobs(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(jobId)) {
-        newSet.delete(jobId);
+    const isLiked = likedJobs.has(jobId);
+    
+    try {
+      if (isLiked) {
+        await JobInteractionsService.unlikeJob(userEmail, jobId);
+        setLikedJobs(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(jobId);
+          return newSet;
+        });
         toast.success(`Removed ${job?.title || 'job'} from liked jobs`);
       } else {
-        newSet.add(jobId);
+        await JobInteractionsService.likeJob(userEmail, jobId);
+        setLikedJobs(prev => {
+          const newSet = new Set(prev);
+          newSet.add(jobId);
+          return newSet;
+        });
         toast.success(`Added ${job?.title || 'job'} to liked jobs`);
       }
-      return newSet;
-    });
-  };
-
-  const handleApplyJob = (jobId: number, jobUrl?: string) => {
-    const job = jobs.find(j => j.id === jobId);
-    setAppliedJobs(prev => new Set([...prev, jobId]));
-    toast.success(`Applied to ${job?.title || 'job'}${jobUrl ? ' - Opening application page' : ''}`);
-    if (jobUrl) {
-      setTimeout(() => {
-        window.open(jobUrl, '_blank');
-      }, 500);
+    } catch (error) {
+      console.error('Failed to update like status:', error);
+      toast.error("Failed to update like status");
     }
   };
 
-  const handleExternalJob = (jobId: number) => {
+  const handleApplyJob = async (jobId: number, jobUrl?: string) => {
     const job = jobs.find(j => j.id === jobId);
-    setExternalJobs(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(jobId)) {
-        newSet.delete(jobId);
+    
+    try {
+      await JobInteractionsService.markJobAsApplied(userEmail, jobId);
+      setAppliedJobs(prev => new Set([...prev, jobId]));
+      toast.success(`Applied to ${job?.title || 'job'}${jobUrl ? ' - Opening application page' : ''}`);
+      
+      if (jobUrl) {
+        setTimeout(() => {
+          window.open(jobUrl, '_blank');
+        }, 500);
+      }
+    } catch (error) {
+      console.error('Failed to mark job as applied:', error);
+      toast.error("Failed to mark job as applied");
+    }
+  };
+
+  const handleExternalJob = async (jobId: number) => {
+    const job = jobs.find(j => j.id === jobId);
+    const isSaved = externalJobs.has(jobId);
+    
+    try {
+      if (isSaved) {
+        await JobInteractionsService.removeInteraction({
+          userEmail,
+          jobId,
+          interactionType: 'SAVED_EXTERNAL'
+        });
+        setExternalJobs(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(jobId);
+          return newSet;
+        });
         toast.success(`Removed ${job?.title || 'job'} from saved jobs`);
       } else {
-        newSet.add(jobId);
+        await JobInteractionsService.saveJobExternal(userEmail, jobId);
+        setExternalJobs(prev => {
+          const newSet = new Set(prev);
+          newSet.add(jobId);
+          return newSet;
+        });
         toast.success(`Saved ${job?.title || 'job'} for later`);
       }
-      return newSet;
-    });
+    } catch (error) {
+      console.error('Failed to update external save status:', error);
+      toast.error("Failed to update external save status");
+    }
   };
 
   return (
@@ -436,185 +515,24 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
             </div>
             
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-sm">
-                {/* Quick Filter Chips */}
-                {['Remote', 'Onsite', 'Hybrid'].map(workType => (
-                  <button
-                    key={workType}
-                    onClick={() => handleFilterChange('workType', workType)}
-                    className={`px-2 py-1 rounded-md transition-colors ${
-                      filters.workType.includes(workType)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    {workType}
-                  </button>
-                ))}
-                {['Entry Level', 'Mid Level', 'Senior Level'].map(level => (
-                  <button
-                    key={level}
-                    onClick={() => handleFilterChange('jobLevel', level)}
-                    className={`px-2 py-1 rounded-md transition-colors ${
-                      filters.jobLevel.includes(level)
-                        ? 'bg-primary text-primary-foreground'
-                        : 'text-muted-foreground hover:bg-muted'
-                    }`}
-                  >
-                    {level}
-                  </button>
-                ))}
-              </div>
-              <div className="flex items-center gap-2">
-                {getActiveFilterCount() > 0 && (
-                  <Button variant="ghost" size="sm" onClick={clearAllFilters}>
-                    Clear ({getActiveFilterCount()})
-                  </Button>
-                )}
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={showFilters ? 'bg-muted' : ''}
-                >
-                  <Filter className="w-4 h-4 mr-2" />
-                  Filters {getActiveFilterCount() > 0 && `(${getActiveFilterCount()})`}
-                </Button>
-              </div>
+              {/* Dropdown Filters */}
+              <FilterDropdowns
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                onClearAllFilters={clearAllFilters}
+                getActiveFilterCount={getActiveFilterCount}
+              />
             </div>
           </div>
         </div>
 
-        {/* Advanced Filters Panel */}
-        {showFilters && (
-          <div className="bg-card rounded-lg p-4 border border-border shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Job Type Filter */}
-              <div>
-                <h4 className="font-medium mb-2 text-card-foreground">Job Type</h4>
-                <div className="space-y-2">
-                  {['Full-time', 'Part-time', 'Contract', 'Internship'].map(type => (
-                    <label key={type} className="flex items-center space-x-2">
-                      <input
-                        type="checkbox"
-                        checked={filters.jobType.includes(type)}
-                        onChange={() => handleFilterChange('jobType', type)}
-                        className="rounded border-border"
-                      />
-                      <span className="text-sm text-card-foreground">{type}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Date Posted Filter */}
-              <div>
-                <h4 className="font-medium mb-2 text-card-foreground">Date Posted</h4>
-                <div className="space-y-2">
-                  {['Last 24 hours', 'Last week', 'Last month', 'Anytime'].map(period => (
-                    <label key={period} className="flex items-center space-x-2">
-                      <input
-                        type="radio"
-                        name="datePosted"
-                        checked={filters.datePosted === period || (period === 'Anytime' && !filters.datePosted)}
-                        onChange={() => handleFilterChange('datePosted', period === 'Anytime' ? '' : period)}
-                        className="border-border"
-                      />
-                      <span className="text-sm text-card-foreground">{period}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Match Score Filter */}
-              <div>
-                <h4 className="font-medium mb-2 text-card-foreground">Minimum Match Score</h4>
-                <div className="space-y-2">
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={filters.minMatchScore}
-                    onChange={(e) => handleFilterChange('minMatchScore', parseInt(e.target.value))}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>0%</span>
-                    <span className="font-medium text-card-foreground">{filters.minMatchScore}%</span>
-                    <span>100%</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Active Filters Summary */}
-              <div>
-                <h4 className="font-medium mb-2 text-card-foreground">Active Filters</h4>
-                <div className="space-y-1">
-                  {getActiveFilterCount() === 0 ? (
-                    <span className="text-sm text-muted-foreground">No filters applied</span>
-                  ) : (
-                    <>
-                      {filters.workType.map(type => (
-                        <div key={type} className="flex items-center justify-between bg-muted px-2 py-1 rounded text-xs">
-                          <span>{type}</span>
-                          <button 
-                            onClick={() => handleFilterChange('workType', type)}
-                            className="text-muted-foreground hover:text-foreground ml-1"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      {filters.jobLevel.map(level => (
-                        <div key={level} className="flex items-center justify-between bg-muted px-2 py-1 rounded text-xs">
-                          <span>{level}</span>
-                          <button 
-                            onClick={() => handleFilterChange('jobLevel', level)}
-                            className="text-muted-foreground hover:text-foreground ml-1"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      {filters.jobType.map(type => (
-                        <div key={type} className="flex items-center justify-between bg-muted px-2 py-1 rounded text-xs">
-                          <span>{type}</span>
-                          <button 
-                            onClick={() => handleFilterChange('jobType', type)}
-                            className="text-muted-foreground hover:text-foreground ml-1"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      ))}
-                      {filters.datePosted && (
-                        <div className="flex items-center justify-between bg-muted px-2 py-1 rounded text-xs">
-                          <span>{filters.datePosted}</span>
-                          <button 
-                            onClick={() => handleFilterChange('datePosted', '')}
-                            className="text-muted-foreground hover:text-foreground ml-1"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                      {filters.minMatchScore > 0 && (
-                        <div className="flex items-center justify-between bg-muted px-2 py-1 rounded text-xs">
-                          <span>Min {filters.minMatchScore}% match</span>
-                          <button 
-                            onClick={() => handleFilterChange('minMatchScore', 0)}
-                            className="text-muted-foreground hover:text-foreground ml-1"
-                          >
-                            ×
-                          </button>
-                        </div>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+        {/* Welcome Back Banner for Auto-loaded Sessions */}
+        {isAutoLoaded && currentUserPreferences && (
+          <WelcomeBackBanner 
+            preferences={currentUserPreferences}
+            jobCount={jobs.length}
+            onUpdatePreferences={() => setShowPreferencesModal(true)}
+          />
         )}
 
         {/* Job Results Header */}
@@ -751,6 +669,21 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
           </div>
         </div>
       </div>
+
+      {/* Preferences Update Modal */}
+      {currentUserPreferences && (
+        <PreferencesUpdateModal
+          isOpen={showPreferencesModal}
+          onClose={() => setShowPreferencesModal(false)}
+          currentPreferences={currentUserPreferences}
+          userEmail={userEmail}
+          onPreferencesUpdated={(newPreferences) => {
+            setCurrentUserPreferences(newPreferences);
+            // TODO: Optionally refresh jobs with new preferences
+            console.log("Preferences updated:", newPreferences);
+          }}
+        />
+      )}
     </div>
   );
 } 

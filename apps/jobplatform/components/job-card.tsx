@@ -1,4 +1,5 @@
 import { ScrapedJob } from "../types/job-types";
+import { formatTimeAgo } from "../lib/time-utils";
 
 interface JobCardProps {
   job: ScrapedJob;
@@ -34,7 +35,7 @@ export const JobCard = ({ job, showDescription = false }: JobCardProps) => (
           )}
           {job.date_posted && (
             <span className="bg-secondary text-secondary-foreground px-3 py-1 rounded-full text-xs font-medium">
-              📅 {new Date(job.date_posted).toLocaleDateString()}
+              📅 {formatTimeAgo(job.date_posted)}
             </span>
           )}
         </div>
