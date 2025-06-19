@@ -11,6 +11,7 @@ import { JobDetailsInfo } from "../../../components/job-details/job-details-info
 import { JobDetailsDescription } from "../../../components/job-details/job-details-description";
 import { JobDetailsActions } from "../../../components/job-details/job-details-actions";
 import { JobInteractionsService } from "../../../services/job-interactions-service";
+import { ApplyConfirmationModal } from "../../../components/apply-confirmation-modal";
 
 export default function JobDetailsPage() {
   const params = useParams();
@@ -23,6 +24,13 @@ export default function JobDetailsPage() {
   const [isApplied, setIsApplied] = useState(false);
   const [isExternal, setIsExternal] = useState(false);
   const [userEmail] = useState<string>("user@example.com"); // TODO: Get from authentication
+  
+  // Apply confirmation modal state
+  const [showApplyConfirmation, setShowApplyConfirmation] = useState(false);
+  const [pendingJobApplication, setPendingJobApplication] = useState<{
+    jobId: number;
+    jobUrl?: string;
+  } | null>(null);
 
   // Load job details and interaction status
   useEffect(() => {
@@ -36,7 +44,7 @@ export default function JobDetailsPage() {
           
           // Load interaction status
           const statusMap = await JobInteractionsService.getJobInteractionStatus(userEmail, [parseInt(jobId)]);
-          const interactions = statusMap[jobId] || [];
+          const interactions = statusMap[parseInt(jobId)] || [];
           setIsLiked(interactions.includes('LIKED'));
           setIsApplied(interactions.includes('APPLIED'));
           setIsExternal(interactions.includes('SAVED_EXTERNAL'));
@@ -77,17 +85,35 @@ export default function JobDetailsPage() {
   };
 
   const handleApplyJob = async (jobId: number, jobUrl?: string) => {
+    // Set up pending application and show confirmation modal
+    setPendingJobApplication({ jobId, jobUrl });
+    setShowApplyConfirmation(true);
+    
+    // Open the job URL immediately so user can apply
+    if (jobUrl) {
+      window.open(jobUrl, '_blank');
+    }
+  };
+
+  const handleApplyConfirmation = async (userApplied: boolean) => {
+    if (!pendingJobApplication) return;
+    
+    const { jobId } = pendingJobApplication;
+    
     try {
-      await JobInteractionsService.markJobAsApplied(userEmail, jobId);
-      setIsApplied(true);
-      toast.success(`Marked ${job?.title || 'job'} as applied`);
-      
-      if (jobUrl) {
-        window.open(jobUrl, '_blank');
+      if (userApplied) {
+        await JobInteractionsService.markJobAsApplied(userEmail, jobId);
+        setIsApplied(true);
+        toast.success(`Marked ${job?.title || 'job'} as applied`);
+      } else {
+        toast.info("Application status not updated");
       }
     } catch (error) {
       console.error('Failed to mark job as applied:', error);
-      toast.error("Failed to mark job as applied");
+      toast.error("Failed to update application status");
+    } finally {
+      setShowApplyConfirmation(false);
+      setPendingJobApplication(null);
     }
   };
 
@@ -266,6 +292,20 @@ export default function JobDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* Apply Confirmation Modal */}
+      {pendingJobApplication && job && (
+        <ApplyConfirmationModal
+          isOpen={showApplyConfirmation}
+          onClose={() => {
+            setShowApplyConfirmation(false);
+            setPendingJobApplication(null);
+          }}
+          onConfirm={handleApplyConfirmation}
+          jobTitle={job.title}
+          company={job.company}
+        />
+      )}
     </div>
   );
 } 
