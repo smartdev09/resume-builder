@@ -262,7 +262,67 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     minMatchScore: 0 as number // Minimum match score
   });
 
-  // Apply filters to jobs
+  // Apply only manual filters (used for liked/applied/external tabs)
+  // This excludes preference-based filtering but allows manual filtering
+  const applyManualFiltersOnly = (jobsToFilter: ScrapedJob[]) => {
+    return jobsToFilter.filter(job => {
+      // Work Type filter
+      if (filters.workType.length > 0) {
+        const jobWorkType = job.is_remote ? 'Remote' : 
+                           job.work_from_home_type === 'hybrid' ? 'Hybrid' : 'Onsite';
+        if (!filters.workType.includes(jobWorkType)) return false;
+      }
+
+      // Job Level filter
+      if (filters.jobLevel.length > 0) {
+        const jobLevel = job.job_level || 'Entry Level';
+        if (!filters.jobLevel.some(level => jobLevel.toLowerCase().includes(level.toLowerCase()))) {
+          return false;
+        }
+      }
+
+      // Job Type filter
+      if (filters.jobType.length > 0) {
+        const jobType = job.job_type || 'Full-time';
+        if (!filters.jobType.some(type => jobType.toLowerCase().includes(type.toLowerCase()))) {
+          return false;
+        }
+      }
+
+      // Date Posted filter
+      if (filters.datePosted) {
+        const jobDate = new Date(job.date_posted || Date.now());
+        const now = new Date();
+        const timeDiff = now.getTime() - jobDate.getTime();
+        const daysDiff = timeDiff / (1000 * 3600 * 24);
+
+        switch (filters.datePosted) {
+          case 'Last 24 hours':
+            if (daysDiff > 1) return false;
+            break;
+          case 'Last week':
+            if (daysDiff > 7) return false;
+            break;
+          case 'Last month':
+            if (daysDiff > 30) return false;
+            break;
+        }
+      }
+
+      // Match Score filter
+      if (filters.minMatchScore > 0) {
+        const matchScore = job.matchScore || 0;
+        if (matchScore < filters.minMatchScore) return false;
+      }
+
+      // NOTE: We do NOT filter by user preferences here
+      // These tabs should show all user interactions regardless of current preferences
+
+      return true;
+    });
+  };
+
+  // Apply all filters to jobs (used for main jobs tab)
   const applyFilters = (jobsToFilter: ScrapedJob[]) => {
     return jobsToFilter.filter(job => {
       // Work Type filter
@@ -334,9 +394,14 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
         break;
       default:
         tabFilteredJobs = jobs;
+        // For the main jobs tab, apply all filters including preference-based ones
+        return applyFilters(tabFilteredJobs);
     }
 
-    return applyFilters(tabFilteredJobs);
+    // For interaction-based tabs (liked, applied, external), 
+    // show all user interactions regardless of current preferences
+    // but still allow manual filtering if user wants to filter them
+    return applyManualFiltersOnly(tabFilteredJobs);
   };
 
   const filteredJobs = getFilteredJobs();
