@@ -2,13 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { ScrapedJob } from "../types/job-types";
-import { MapPin, Clock, Building2, Briefcase, Filter, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar, MessageSquare, X } from "lucide-react";
+import { MapPin, Clock, Building2, Briefcase, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar, MessageSquare, X } from "lucide-react";
 import { Button } from "@resume/ui/button";
 import { Badge } from "@resume/ui/badge";
 import { toast } from "@resume/ui/sonner";
 import { formatTimeAgoWithTooltip } from "../lib/time-utils";
 import { FilterDropdowns } from "./filter-dropdowns";
-import { JobInteractionsService, JobInteractionType } from "../services/job-interactions-service";
+import { JobInteractionsService } from "../services/job-interactions-service";
 import { WelcomeBackBanner } from "./welcome-back-banner";
 import { PreferencesUpdateModal } from "./preferences-update-modal";
 
@@ -37,6 +37,66 @@ interface JobCardProps {
   onApply?: (jobId: number, jobUrl?: string) => void;
   onExternal?: (jobId: number) => void;
 }
+
+// Confirmation Modal Component
+interface ApplyConfirmationModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onConfirm: (applied: boolean) => void;
+  jobTitle: string;
+  company: string;
+}
+
+const ApplyConfirmationModal = ({ isOpen, onClose, onConfirm, jobTitle, company }: ApplyConfirmationModalProps) => {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-card border border-border rounded-lg p-6 max-w-md w-full mx-4 shadow-lg">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-card-foreground">Application Confirmation</h3>
+          <button 
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground">
+            <p className="mb-2">
+              <span className="font-medium text-card-foreground">Job:</span> {jobTitle}
+            </p>
+            <p className="mb-4">
+              <span className="font-medium text-card-foreground">Company:</span> {company}
+            </p>
+          </div>
+          
+          <div className="text-sm text-card-foreground">
+            Did you successfully submit your application for this position?
+          </div>
+          
+          <div className="flex gap-3 pt-4">
+            <Button 
+              onClick={() => onConfirm(true)}
+              className="flex-1"
+            >
+              Yes, I Applied
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={() => onConfirm(false)}
+              className="flex-1"
+            >
+              No, I Didn't Apply
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onApply, onExternal }: JobCardProps) => {
   console.log(job);
@@ -198,6 +258,14 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
   const [interactionsLoaded, setInteractionsLoaded] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [currentUserPreferences, setCurrentUserPreferences] = useState(userPreferences);
+  
+  // Apply confirmation modal state
+  const [showApplyConfirmation, setShowApplyConfirmation] = useState(false);
+  const [pendingJobApplication, setPendingJobApplication] = useState<{
+    jobId: number;
+    jobUrl?: string;
+    job?: ScrapedJob;
+  } | null>(null);
 
   // Load existing job interactions when component mounts or jobs change
   useEffect(() => {
@@ -387,19 +455,35 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
   const handleApplyJob = async (jobId: number, jobUrl?: string) => {
     const job = jobs.find(j => j.id === jobId);
     
+    // Set up pending application and show confirmation modal
+    setPendingJobApplication({ jobId, jobUrl, job });
+    setShowApplyConfirmation(true);
+    
+    // Open the job URL immediately so user can apply
+    if (jobUrl) {
+      window.open(jobUrl, '_blank');
+    }
+  };
+
+  const handleApplyConfirmation = async (userApplied: boolean) => {
+    if (!pendingJobApplication) return;
+    
+    const { jobId, job } = pendingJobApplication;
+    
     try {
-      await JobInteractionsService.markJobAsApplied(userEmail, jobId);
-      setAppliedJobs(prev => new Set([...prev, jobId]));
-      toast.success(`Applied to ${job?.title || 'job'}${jobUrl ? ' - Opening application page' : ''}`);
-      
-      if (jobUrl) {
-        setTimeout(() => {
-          window.open(jobUrl, '_blank');
-        }, 500);
+      if (userApplied) {
+        await JobInteractionsService.markJobAsApplied(userEmail, jobId);
+        setAppliedJobs(prev => new Set([...prev, jobId]));
+        toast.success(`Marked ${job?.title || 'job'} as applied`);
+      } else {
+        toast.info("Application status not updated");
       }
     } catch (error) {
       console.error('Failed to mark job as applied:', error);
-      toast.error("Failed to mark job as applied");
+      toast.error("Failed to update application status");
+    } finally {
+      setShowApplyConfirmation(false);
+      setPendingJobApplication(null);
     }
   };
 
@@ -682,6 +766,20 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
             // TODO: Optionally refresh jobs with new preferences
             console.log("Preferences updated:", newPreferences);
           }}
+        />
+      )}
+
+      {/* Apply Confirmation Modal */}
+      {pendingJobApplication && (
+        <ApplyConfirmationModal
+          isOpen={showApplyConfirmation}
+          onClose={() => {
+            setShowApplyConfirmation(false);
+            setPendingJobApplication(null);
+          }}
+          onConfirm={handleApplyConfirmation}
+          jobTitle={pendingJobApplication.job?.title || "this job"}
+          company={pendingJobApplication.job?.company || "this company"}
         />
       )}
     </div>
