@@ -2,15 +2,16 @@
 
 import { useState, useEffect } from "react";
 import { ScrapedJob } from "../types/job-types";
-import { MapPin, Clock, Building2, Briefcase, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar, MessageSquare, X } from "lucide-react";
+import { MapPin, Clock, Building2, Briefcase, Filter, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar, MessageSquare, X } from "lucide-react";
 import { Button } from "@resume/ui/button";
 import { Badge } from "@resume/ui/badge";
 import { toast } from "@resume/ui/sonner";
 import { formatTimeAgoWithTooltip } from "../lib/time-utils";
 import { FilterDropdowns } from "./filter-dropdowns";
-import { JobInteractionsService } from "../services/job-interactions-service";
+import { JobInteractionsService, JobInteractionType } from "../services/job-interactions-service";
 import { WelcomeBackBanner } from "./welcome-back-banner";
 import { PreferencesUpdateModal } from "./preferences-update-modal";
+import { JobDetailsModal } from "./job-details/job-details-modal";
 
 interface JobListingPageProps {
   jobs: ScrapedJob[];
@@ -36,6 +37,7 @@ interface JobCardProps {
   onLike?: (jobId: number) => void;
   onApply?: (jobId: number, jobUrl?: string) => void;
   onExternal?: (jobId: number) => void;
+  onJobClick?: (job: ScrapedJob) => void;
 }
 
 // Confirmation Modal Component
@@ -98,7 +100,7 @@ const ApplyConfirmationModal = ({ isOpen, onClose, onConfirm, jobTitle, company 
   );
 };
 
-const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onApply, onExternal }: JobCardProps) => {
+const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onApply, onExternal, onJobClick }: JobCardProps) => {
   console.log(job);
   
   const actualMatchScore = job.matchScore || matchScore || Math.floor(Math.random() * 30) + 70;
@@ -121,11 +123,17 @@ const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onAp
   return (
     <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
       <div className="flex justify-between items-start">
-        <div className="flex-1 pr-6">
+        <div 
+          className="flex-1 pr-6 cursor-pointer" 
+          onClick={() => onJobClick?.(job)}
+        >
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
             <Calendar className="w-4 h-4" />
             <span title={exactDate}>{timeAgo}</span>
-            <button className="ml-auto text-muted-foreground hover:text-foreground">
+            <button 
+              className="ml-auto text-muted-foreground hover:text-foreground"
+              onClick={(e) => e.stopPropagation()}
+            >
               <MoreHorizontal className="w-5 h-5" />
             </button>
           </div>
@@ -169,7 +177,7 @@ const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onAp
             {Math.floor(Math.random() * 200) + 50} applicants
           </div> */}
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
             <button 
               className="p-2 text-muted-foreground hover:text-foreground"
               onClick={() => onExternal?.(job.id)}
@@ -266,6 +274,10 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     jobUrl?: string;
     job?: ScrapedJob;
   } | null>(null);
+
+  // Job details modal state
+  const [selectedJob, setSelectedJob] = useState<ScrapedJob | null>(null);
+  const [showJobDetails, setShowJobDetails] = useState(false);
 
   // Load existing job interactions when component mounts or jobs change
   useEffect(() => {
@@ -519,6 +531,17 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     }
   };
 
+  // Handle job card click to show details
+  const handleJobClick = (job: ScrapedJob) => {
+    setSelectedJob(job);
+    setShowJobDetails(true);
+  };
+
+  const handleCloseJobDetails = () => {
+    setShowJobDetails(false);
+    setSelectedJob(null);
+  };
+
   return (
     <div className="flex gap-6">
       {/* Main Content */}
@@ -650,6 +673,7 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
                 onLike={handleLikeJob}
                 onApply={handleApplyJob}
                 onExternal={handleExternalJob}
+                onJobClick={handleJobClick}
               />
             ))
           ) : (
@@ -782,6 +806,19 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
           company={pendingJobApplication.job?.company || "this company"}
         />
       )}
+
+      {/* Job Details Modal */}
+      <JobDetailsModal
+        job={selectedJob}
+        isOpen={showJobDetails}
+        onClose={handleCloseJobDetails}
+        isLiked={selectedJob ? likedJobs.has(selectedJob.id) : false}
+        isApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false}
+        isExternal={selectedJob ? externalJobs.has(selectedJob.id) : false}
+        onLike={handleLikeJob}
+        onApply={handleApplyJob}
+        onExternal={handleExternalJob}
+      />
     </div>
   );
 } 
