@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { ScrapedJob } from "../types/job-types";
 import { MapPin, Clock, Building2, Briefcase, Filter, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar, MessageSquare, X } from "lucide-react";
 import { Button } from "@resume/ui/button";
@@ -11,7 +12,6 @@ import { FilterDropdowns } from "./filter-dropdowns";
 import { JobInteractionsService, JobInteractionType } from "../services/job-interactions-service";
 import { WelcomeBackBanner } from "./welcome-back-banner";
 import { PreferencesUpdateModal } from "./preferences-update-modal";
-import { JobDetailsModal } from "./job-details/job-details-modal";
 
 interface JobListingPageProps {
   jobs: ScrapedJob[];
@@ -258,6 +258,7 @@ const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onAp
 };
 
 export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, userPreferences, isAutoLoaded }: JobListingPageProps) {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<'jobs' | 'liked' | 'applied' | 'external'>('jobs');
   const [likedJobs, setLikedJobs] = useState<Set<number>>(new Set());
   const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
@@ -266,7 +267,7 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
   const [interactionsLoaded, setInteractionsLoaded] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [currentUserPreferences, setCurrentUserPreferences] = useState(userPreferences);
-  
+
   // Apply confirmation modal state
   const [showApplyConfirmation, setShowApplyConfirmation] = useState(false);
   const [pendingJobApplication, setPendingJobApplication] = useState<{
@@ -274,10 +275,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     jobUrl?: string;
     job?: ScrapedJob;
   } | null>(null);
-
-  // Job details modal state
-  const [selectedJob, setSelectedJob] = useState<ScrapedJob | null>(null);
-  const [showJobDetails, setShowJobDetails] = useState(false);
 
   // Load existing job interactions when component mounts or jobs change
   useEffect(() => {
@@ -531,15 +528,9 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     }
   };
 
-  // Handle job card click to show details
+  // Handle job card click to navigate to job details page
   const handleJobClick = (job: ScrapedJob) => {
-    setSelectedJob(job);
-    setShowJobDetails(true);
-  };
-
-  const handleCloseJobDetails = () => {
-    setShowJobDetails(false);
-    setSelectedJob(null);
+    router.push(`/jobs/${job.id}`);
   };
 
   return (
@@ -807,18 +798,7 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
         />
       )}
 
-      {/* Job Details Modal */}
-      <JobDetailsModal
-        job={selectedJob}
-        isOpen={showJobDetails}
-        onClose={handleCloseJobDetails}
-        isLiked={selectedJob ? likedJobs.has(selectedJob.id) : false}
-        isApplied={selectedJob ? appliedJobs.has(selectedJob.id) : false}
-        isExternal={selectedJob ? externalJobs.has(selectedJob.id) : false}
-        onLike={handleLikeJob}
-        onApply={handleApplyJob}
-        onExternal={handleExternalJob}
-      />
+
     </div>
   );
 } 

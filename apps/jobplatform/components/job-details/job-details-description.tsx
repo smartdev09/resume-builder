@@ -12,18 +12,73 @@ export function JobDetailsDescription({ job }: JobDetailsDescriptionProps) {
   const formatDescription = (description: string | null) => {
     if (!description) return null;
     
-    // Split by common separators and clean up
-    const sections = description
-      .split(/\n\n|\n•|\n-|\n\*/)
-      .map(section => section.trim())
-      .filter(section => section.length > 0);
+    // Clean up escaped characters and special formatting
+    let cleaned = description
+      .replace(/\\\-/g, '-') // Replace \- with -
+      .replace(/\\\*/g, '*') // Replace \* with *
+      .replace(/\\(.)/g, '$1') // Remove other escape characters
+      .replace(/-{3,}/g, '') // Remove separator lines (---)
+      .replace(/#{1,6}\s*/g, '') // Remove markdown headers (### )
+      .trim();
 
-    return sections;
+    // Split into sections by double line breaks
+    return cleaned.split(/\n\n+/).filter(section => section.trim().length > 0);
+  };
+
+  const formatTextWithBold = (text: string) => {
+    // Split text by **bold** patterns
+    const parts = text.split(/(\*\*[^*]+\*\*)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        const boldText = part.slice(2, -2);
+        return <strong key={index} className="font-semibold text-card-foreground">{boldText}</strong>;
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
+  const renderSection = (section: string, index: number) => {
+    // Check if this is a bullet point section
+    const lines = section.split('\n').filter(line => line.trim());
+    const hasBullets = lines.some(line => line.trim().match(/^[\*\-]\s+/));
+    
+    if (hasBullets) {
+      // Handle bullet points
+      const title = lines[0]?.replace(/^[\*\-]\s*/, '') || '';
+      const bullets = lines.slice(title ? 1 : 0)
+        .filter(line => line.trim().match(/^[\*\-]\s+/))
+        .map(line => line.replace(/^[\*\-]\s*/, ''));
+      
+      return (
+        <div key={index} className="mb-4">
+          {title && !title.match(/^[\*\-]\s+/) && (
+            <h4 className="text-sm font-semibold text-card-foreground mb-2">
+              {formatTextWithBold(title)}
+            </h4>
+          )}
+          <ul className="list-disc list-inside space-y-1 ml-4">
+            {bullets.map((bullet, bulletIndex) => (
+              <li key={bulletIndex} className="text-sm text-card-foreground leading-relaxed">
+                {formatTextWithBold(bullet)}
+              </li>
+            ))}
+          </ul>
+        </div>
+      );
+    } else {
+      // Handle regular paragraphs
+      return (
+        <p key={index} className="text-sm text-card-foreground leading-relaxed mb-4">
+          {formatTextWithBold(section)}
+        </p>
+      );
+    }
   };
 
   const descriptionSections = formatDescription(job.description);
 
-  const fallbackDescription = [
+  const fallbackSections = [
     "We are looking for a talented professional to join our dynamic team.",
     "In this role, you will be responsible for contributing to innovative projects and collaborating with cross-functional teams to deliver high-quality solutions.",
     "The ideal candidate will have strong problem-solving skills, excellent communication abilities, and a passion for continuous learning and growth.",
@@ -32,7 +87,7 @@ export function JobDetailsDescription({ job }: JobDetailsDescriptionProps) {
 
   const sectionsToDisplay = descriptionSections && descriptionSections.length > 0 
     ? descriptionSections 
-    : fallbackDescription;
+    : fallbackSections;
 
   return (
     <div className="space-y-4">
@@ -56,13 +111,7 @@ export function JobDetailsDescription({ job }: JobDetailsDescriptionProps) {
 
       <div className="bg-muted/30 rounded-lg p-6 border border-border">
         <div className="prose prose-sm max-w-none">
-          {sectionsToDisplay.map((section, index) => (
-            <div key={index} className="mb-4 last:mb-0">
-              <p className="text-sm text-card-foreground leading-relaxed">
-                {section}
-              </p>
-            </div>
-          ))}
+          {sectionsToDisplay.map((section, index) => renderSection(section, index))}
         </div>
 
         {!job.description && (
@@ -81,7 +130,7 @@ export function JobDetailsDescription({ job }: JobDetailsDescriptionProps) {
           <h4 className="text-md font-semibold text-card-foreground">About {job.company}</h4>
           <div className="bg-muted/20 rounded-lg p-4 border border-border">
             <p className="text-sm text-muted-foreground leading-relaxed">
-              {job.company_description}
+              {formatTextWithBold(job.company_description)}
             </p>
           </div>
         </div>
