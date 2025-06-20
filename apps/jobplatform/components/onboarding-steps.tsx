@@ -37,7 +37,8 @@ export function OnboardingSteps() {
 
   const { matchJobs, processingBatch, batchProgress } = useJobMatching();
 
-  // Initialize Groq client
+  // COMMENTED OUT: Groq client initialization - using keyword matching only
+  /*
   useEffect(() => {
     const initializeGroq = async () => {
       try {
@@ -55,6 +56,7 @@ export function OnboardingSteps() {
     
     initializeGroq();
   }, []);
+  */
 
   // Check for existing user preferences when component loads
   useEffect(() => {
@@ -140,7 +142,7 @@ export function OnboardingSteps() {
         const batch = allJobs.slice(i, i + BATCH_SIZE);
         console.log(`Auto-loading: Processing batch ${Math.floor(i/BATCH_SIZE) + 1}, jobs ${i + 1}-${Math.min(i + BATCH_SIZE, allJobs.length)}`);
         
-        const batchMatches = await matchJobs(batch, userPreferences, groqClient, true);
+        const batchMatches = await matchJobs(batch, userPreferences, null, true); // Pass null since we're using keyword matching only
         matchedJobsList = [...matchedJobsList, ...batchMatches];
         processedCount += batch.length;
         
@@ -268,7 +270,7 @@ export function OnboardingSteps() {
           const batchMatches = await matchJobs(
             currentBatch, 
             userPreferences, 
-            groqClient, 
+            null, // Pass null since we're using keyword matching only
             false, 
             (currentMatches) => {
               // Update UI with current matches as they come in
@@ -379,7 +381,7 @@ export function OnboardingSteps() {
         console.log(`Processing ${nextBatch.length} new jobs, ${stillRemaining.length} still unprocessed`);
         
         const userPreferences = convertToUserPreferences(formData);
-        const batchMatches = await matchJobs(nextBatch, userPreferences, groqClient, true);
+        const batchMatches = await matchJobs(nextBatch, userPreferences, null, true); // Pass null since we're using keyword matching only
         
         // Take up to 10 new matches
         newMatches = batchMatches.slice(0, 10);

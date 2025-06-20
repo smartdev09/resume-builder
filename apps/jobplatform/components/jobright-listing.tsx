@@ -1,18 +1,17 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ScrapedJob } from "../types/job-types";
-import { MapPin, Clock, Building2, Briefcase, Filter, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar, MessageSquare, X } from "lucide-react";
-import { Button } from "@resume/ui/button";
-import { Badge } from "@resume/ui/badge";
 import { toast } from "@resume/ui/sonner";
-import { formatTimeAgoWithTooltip } from "../lib/time-utils";
 import { FilterDropdowns } from "./filter-dropdowns";
-import { JobInteractionsService, JobInteractionType } from "../services/job-interactions-service";
+import { JobInteractionsService } from "../services/job-interactions-service";
 import { WelcomeBackBanner } from "./welcome-back-banner";
 import { PreferencesUpdateModal } from "./preferences-update-modal";
 import { ApplyConfirmationModal } from "./apply-confirmation-modal";
+import { JobNavigationTabs } from "./job-navigation-tabs";
+import { JobResultsList } from "./job-results-list";
+import { JobStatisticsHeader } from "./job-statistics-header";
+import OrionAssistant from "./orion-assistant";
 
 interface JobListingPageProps {
   jobs: ScrapedJob[];
@@ -29,184 +28,13 @@ interface JobListingPageProps {
   isAutoLoaded?: boolean; // Indicates if jobs were loaded from saved preferences
 }
 
-interface JobCardProps {
-  job: ScrapedJob;
-  matchScore?: number;
-  isLiked?: boolean;
-  isApplied?: boolean;
-  isExternal?: boolean;
-  onLike?: (jobId: number) => void;
-  onApply?: (jobId: number, jobUrl?: string) => void;
-  onExternal?: (jobId: number) => void;
-  onJobClick?: (job: ScrapedJob) => void;
-}
-
-
-
-const JobCard = ({ job, matchScore, isLiked, isApplied, isExternal, onLike, onApply, onExternal, onJobClick }: JobCardProps) => {
-  console.log(job);
-  
-  const actualMatchScore = job.matchScore || matchScore || Math.floor(Math.random() * 30) + 70;
-  
-  const { timeAgo, exactDate } = formatTimeAgoWithTooltip(job.date_posted);
-
-  const getMatchColor = (score: number) => {
-    if (score >= 90) return "text-emerald-500";
-    if (score >= 80) return "text-blue-500";
-    if (score >= 70) return "text-yellow-500";
-    return "text-muted-foreground";
-  };
-
-  const getMatchLabel = (score: number) => {
-    if (score >= 90) return "STRONG MATCH";
-    if (score >= 80) return "GOOD MATCH";
-    return "FAIR MATCH";
-  };
-
-  return (
-    <div className="bg-card border border-border rounded-lg p-6 shadow-sm hover:shadow-md transition-shadow">
-      <div className="flex justify-between items-start">
-        <div 
-          className="flex-1 pr-6 cursor-pointer" 
-          onClick={() => onJobClick?.(job)}
-        >
-          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-            <Calendar className="w-4 h-4" />
-            <span title={exactDate}>{timeAgo}</span>
-            <button 
-              className="ml-auto text-muted-foreground hover:text-foreground"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreHorizontal className="w-5 h-5" />
-            </button>
-          </div>
-          
-          <h3 className="text-xl font-semibold text-card-foreground mb-2">
-            {job.title}
-          </h3>
-          
-          <div className="flex items-center gap-2 mb-3">
-            <span className="text-lg font-medium text-card-foreground">{job.company}</span>
-            <span className="text-muted-foreground">/</span>
-            <span className="text-muted-foreground">{job.company_industry || "Software"}</span>
-            <span className="text-muted-foreground">•</span>
-            <span className="text-muted-foreground">Public Company</span>
-          </div>
-          
-          <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <MapPin className="w-4 h-4" />
-              {job.location}
-            </div>
-            <div className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
-              {job.job_type || "Full-time"}
-            </div>
-            <div className="flex items-center gap-1">
-              <Building2 className="w-4 h-4" />
-              {job.is_remote ? "Remote" : "Onsite"}
-            </div>
-            <div className="flex items-center gap-1">
-              <Briefcase className="w-4 h-4" />
-              {job.job_level || "Entry Level"}
-            </div>
-            {/* <div className="flex items-center gap-1">
-              <Calendar className="w-4 h-4" />
-              1+ years exp
-            </div> */}
-          </div>
-          
-          {/* <div className="text-sm text-muted-foreground mb-4">
-            {Math.floor(Math.random() * 200) + 50} applicants
-          </div> */}
-          
-          <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="p-2 text-muted-foreground hover:text-foreground"
-              onClick={() => onExternal?.(job.id)}
-              title="Save for later"
-            >
-              <Bookmark className={`w-5 h-5 ${isExternal ? 'fill-current text-blue-500' : ''}`} />
-            </button>
-            <button 
-              className={`p-2 hover:text-red-500 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
-              onClick={() => onLike?.(job.id)}
-              title={isLiked ? "Unlike job" : "Like job"}
-            >
-              <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-            </button>
-            <Button variant="outline" className="text-sm">
-              ⭐ ASK ORION
-            </Button>
-            <Button 
-              className={`px-6 hover:bg-primary/90 ${isApplied ? 'bg-green-600 text-white' : 'bg-primary text-primary-foreground'}`}
-              onClick={() => onApply?.(job.id, job.job_url)}
-              disabled={isApplied}
-            >
-              {isApplied ? "APPLIED" : "APPLY NOW"}
-            </Button>
-          </div>
-        </div>
-        
-        {/* Match Score */}
-        <div className="flex flex-col items-center">
-          <div className="relative w-20 h-20 mb-2">
-            <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 100 100">
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                stroke="currentColor"
-                strokeWidth="8"
-                fill="transparent"
-                className="text-muted"
-              />
-              <circle
-                cx="50"
-                cy="50"
-                r="40"
-                stroke="currentColor"
-                strokeWidth="8"
-                fill="transparent"
-                strokeDasharray={`${2 * Math.PI * 40}`}
-                              strokeDashoffset={`${2 * Math.PI * 40 * (1 - actualMatchScore / 100)}`}
-              className={getMatchColor(actualMatchScore)}
-              strokeLinecap="round"
-            />
-          </svg>
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xl font-bold text-card-foreground">
-              {actualMatchScore}%
-            </span>
-          </div>
-        </div>
-        <div className="text-center">
-          <div className={`text-sm font-semibold ${getMatchColor(actualMatchScore)}`}>
-            {getMatchLabel(actualMatchScore)}
-          </div>
-          <div className="text-xs text-muted-foreground mt-1">
-            {job.matchReason ? (
-              job.matchReason.length > 40 ? 
-                `${job.matchReason.substring(0, 40)}...` : 
-                job.matchReason
-            ) : (
-              <>✓ Growth Opportunities<br />✓ H1B Sponsor Likely</>
-            )}
-          </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, userPreferences, isAutoLoaded }: JobListingPageProps) {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'jobs' | 'liked' | 'applied' | 'external'>('jobs');
   const [likedJobs, setLikedJobs] = useState<Set<number>>(new Set());
   const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
   const [externalJobs, setExternalJobs] = useState<Set<number>>(new Set());
-  const [userEmail] = useState<string>("user@example.com"); // TODO: Get from authentication
+  const [userEmail] = useState<string>("user@example.com");
   const [interactionsLoaded, setInteractionsLoaded] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [currentUserPreferences, setCurrentUserPreferences] = useState(userPreferences);
@@ -543,96 +371,24 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
 
   return (
     <div className="flex gap-6">
-      {/* Main Content */}
       <div className="flex-1 space-y-6">
-        {/* Job Platform Navigation */}
-        <div className="bg-card rounded-lg p-4 border border-border shadow-sm">
-          <nav className="flex items-center gap-6 mb-4">
-            <button 
-              className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                activeTab === 'jobs' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-              onClick={() => setActiveTab('jobs')}
-            >
-              <Briefcase className="w-4 h-4" />
-              JOBS
-            </button>
-            <button 
-              className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors ${
-                activeTab === 'liked' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-              onClick={() => setActiveTab('liked')}
-            >
-              Liked <Badge variant="secondary" className="ml-1">{likedJobs.size}</Badge>
-            </button>
-            <button 
-              className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors ${
-                activeTab === 'applied' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-              onClick={() => setActiveTab('applied')}
-            >
-              Applied <Badge variant="secondary" className="ml-1">{appliedJobs.size}</Badge>
-            </button>
-            <button 
-              className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors ${
-                activeTab === 'external' 
-                  ? 'bg-primary text-primary-foreground' 
-                  : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-              }`}
-              onClick={() => setActiveTab('external')}
-            >
-              External <Badge variant="secondary" className="ml-1">{externalJobs.size}</Badge>
-            </button>
-          </nav>
-
-          {/* Filters */}
-          <div className="space-y-3">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 text-sm">
-                {userPreferences && (
-                  <>
-                    <span className="font-medium text-card-foreground">{userPreferences.jobFunction}</span>
-                    <span className="text-muted-foreground">{userPreferences.location}</span>
-                    <span className="text-muted-foreground">{userPreferences.jobType}</span>
-                    {userPreferences.openToRemote && (
-                      <span className="text-muted-foreground">Remote</span>
-                    )}
-                    {userPreferences.needsSponsorship && (
-                      <span className="text-muted-foreground">H1B Sponsorship</span>
-                    )}
-                  </>
-                )}
-                {!userPreferences && (
-                  <>
-                    <span className="font-medium text-card-foreground">Backend Engineer</span>
-                    <span className="font-medium text-card-foreground">Full Stack Engineer</span>
-                    <span className="font-medium text-card-foreground">React Developer</span>
-                    <span className="text-muted-foreground">Within US</span>
-                    <span className="text-muted-foreground">Full-time</span>
-                  </>
-                )}
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between">
-              {/* Dropdown Filters */}
-              <FilterDropdowns
-                filters={filters}
-                onFilterChange={handleFilterChange}
-                onClearAllFilters={clearAllFilters}
-                getActiveFilterCount={getActiveFilterCount}
-              />
-            </div>
-          </div>
+        <JobNavigationTabs
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          likedCount={likedJobs.size}
+          appliedCount={appliedJobs.size}
+          externalCount={externalJobs.size}
+          userPreferences={userPreferences}
+        />
+        <div className="flex items-center justify-between">
+          <FilterDropdowns
+            filters={filters}
+            onFilterChange={handleFilterChange}
+            onClearAllFilters={clearAllFilters}
+            getActiveFilterCount={getActiveFilterCount}
+          />
         </div>
 
-        {/* Welcome Back Banner for Auto-loaded Sessions */}
         {isAutoLoaded && currentUserPreferences && (
           <WelcomeBackBanner 
             preferences={currentUserPreferences}
@@ -641,83 +397,32 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
           />
         )}
 
-        {/* Job Results Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <h2 className="text-lg font-semibold text-card-foreground">
-              {filteredJobs.length} {activeTab === 'jobs' ? 'results' : activeTab}
-            </h2>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Recommended</span>
-              <ChevronDown className="w-4 h-4 text-muted-foreground" />
-            </div>
-          </div>
-          
-          <div className="text-sm text-muted-foreground text-right">
-            Welcome back!<br />
-            Let's continue your job search journey.
-          </div>
-        </div>
+        <JobStatisticsHeader
+          totalJobsToday={Math.floor(jobs.length * 0.3)}
+          totalJobs={jobs.length}
+          activeTab={activeTab}
+          filteredJobsCount={filteredJobs.length}
+        />
 
-        {/* Job Listings */}
-        <div className="space-y-4">
-          {filteredJobs.length > 0 ? (
-            filteredJobs.map((job) => (
-              <JobCard 
-                key={job.id} 
-                job={job}
-                isLiked={likedJobs.has(job.id)}
-                isApplied={appliedJobs.has(job.id)}
-                isExternal={externalJobs.has(job.id)}
-                onLike={handleLikeJob}
-                onApply={handleApplyJob}
-                onExternal={handleExternalJob}
-                onJobClick={handleJobClick}
-              />
-            ))
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-muted-foreground">
-                {activeTab === 'liked' && "No liked jobs yet. Like jobs to see them here."}
-                {activeTab === 'applied' && "No applied jobs yet. Apply to jobs to track them here."}
-                {activeTab === 'external' && "No saved jobs yet. Save jobs for later viewing."}
-                {activeTab === 'jobs' && "No jobs found."}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Load More - Only show on Jobs tab */}
-        {activeTab === 'jobs' && (
-          <div className="text-center mt-8">
-            {hasMoreJobs ? (
-              <Button 
-                variant="outline" 
-                onClick={onLoadMore}
-                disabled={isLoading}
-                className="px-8 py-3"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-2"></div>
-                    Loading More Jobs...
-                  </>
-                ) : (
-                  "Load More Jobs"
-                )}
-              </Button>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                {jobs.length > 0 ? "No more jobs available" : ""}
-              </div>
-            )}
-          </div>
-        )}
+        <JobResultsList
+          jobs={filteredJobs}
+          matchedJobs={filteredJobs}
+          isLoadingMore={isLoading || false}
+          hasMore={hasMoreJobs || false}
+          activeTab={activeTab}
+          onLoadMore={onLoadMore || (() => {})}
+          onJobClick={handleJobClick}
+          onLikeJob={handleLikeJob}
+          onApplyJob={handleApplyJob}
+          onExternalJob={handleExternalJob}
+          isJobLiked={(jobId) => likedJobs.has(jobId)}
+          isJobApplied={(jobId) => appliedJobs.has(jobId)}
+          isJobExternal={(jobId) => externalJobs.has(jobId)}
+        />
       </div>
 
-      {/* Right Sidebar - AI Assistant */}
       <div className="w-80 space-y-4">
-        <div className="bg-card rounded-lg p-6 border border-border shadow-sm sticky top-6">
+        {/* <div className="bg-card rounded-lg p-6 border border-border shadow-sm sticky top-6">
           <div className="flex items-center gap-2 mb-4">
             <MessageSquare className="w-5 h-5 text-primary" />
             <h3 className="font-semibold text-card-foreground">Orion AI Assistant</h3>
@@ -774,10 +479,10 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
+        <OrionAssistant/>
       </div>
 
-      {/* Preferences Update Modal */}
       {currentUserPreferences && (
         <PreferencesUpdateModal
           isOpen={showPreferencesModal}
@@ -786,13 +491,10 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
           userEmail={userEmail}
           onPreferencesUpdated={(newPreferences) => {
             setCurrentUserPreferences(newPreferences);
-            // TODO: Optionally refresh jobs with new preferences
-            console.log("Preferences updated:", newPreferences);
           }}
         />
       )}
 
-      {/* Apply Confirmation Modal */}
       {pendingJobApplication && (
         <ApplyConfirmationModal
           isOpen={showApplyConfirmation}
@@ -805,8 +507,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
           company={pendingJobApplication.job?.company || "this company"}
         />
       )}
-
-
     </div>
   );
 } 
