@@ -1,15 +1,16 @@
 import { useState, useCallback } from "react";
 import { Groq } from "groq-sdk";
 import { ScrapedJob, JobMatch, UserPreferences, BatchProgress } from "../types/job-types";
-import { AIMatchingService } from "@/services/ai-matching";
+// import { AIMatchingService } from "@/services/ai-matching"; // COMMENTED OUT: AI matching disabled
 import { KeywordMatchingService } from "@/services/keyword-matching";
 import { toast } from "@resume/ui/sonner";
 
 export const useJobMatching = () => {
-  const [processingBatch, setProcessingBatch] = useState(false);
-  const [batchProgress, setBatchProgress] = useState<BatchProgress>({ current: 0, total: 0 });
+  // COMMENTED OUT: AI matching related state variables - only needed for keyword matching now
+  // const [processingBatch, setProcessingBatch] = useState(false);
+  // const [batchProgress, setBatchProgress] = useState<BatchProgress>({ current: 0, total: 0 });
 
-  const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+  // const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms)); // COMMENTED OUT: Not needed for keyword matching
 
   const matchJobs = useCallback(async (
     jobs: ScrapedJob[], 
@@ -20,6 +21,19 @@ export const useJobMatching = () => {
   ): Promise<ScrapedJob[]> => {
     if (!jobs || jobs.length === 0) return [];
 
+    // TEMPORARILY DISABLED: AI matching is commented out to use only keyword matching
+    // Use keyword matching only
+    console.log("Using keyword matching for job analysis");
+    toast.info("Using advanced keyword matching for job analysis");
+    const keywordMatches = KeywordMatchingService.matchJobs(jobs, userPreferences);
+    return keywordMatches.map(match => ({
+      ...match.job,
+      matchScore: match.score,
+      matchReason: match.reason
+    }));
+
+    /*
+    // COMMENTED OUT: AI MATCHING FUNCTIONALITY
     // If Groq client is not available, use keyword matching
     if (!groqClient) {
       console.log("Groq client not available, using keyword matching");
@@ -101,11 +115,13 @@ export const useJobMatching = () => {
       matchScore: match.score,
       matchReason: match.reason
     }));
+    */
   }, []);
 
   return {
     matchJobs,
-    processingBatch,
-    batchProgress
+    // COMMENTED OUT: AI matching related return values - not needed for keyword matching
+    processingBatch: false, // Always false since we're using keyword matching only
+    batchProgress: { current: 0, total: 0 } // Always empty since we're using keyword matching only
   };
 };
