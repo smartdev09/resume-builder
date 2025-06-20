@@ -25,7 +25,7 @@ interface JobListingPageProps {
     openToRemote: boolean;
     needsSponsorship: boolean;
   };
-  isAutoLoaded?: boolean; // Indicates if jobs were loaded from saved preferences
+  isAutoLoaded?: boolean;
 }
 
 export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, userPreferences, isAutoLoaded }: JobListingPageProps) {
@@ -39,7 +39,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
   const [currentUserPreferences, setCurrentUserPreferences] = useState(userPreferences);
 
-  // Apply confirmation modal state
   const [showApplyConfirmation, setShowApplyConfirmation] = useState(false);
   const [pendingJobApplication, setPendingJobApplication] = useState<{
     jobId: number;
@@ -47,7 +46,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     job?: ScrapedJob;
   } | null>(null);
 
-  // Load existing job interactions when component mounts or jobs change
   useEffect(() => {
     const loadInteractions = async () => {
       if (jobs.length === 0 || interactionsLoaded) return;
@@ -73,7 +71,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
         setInteractionsLoaded(true);
       } catch (error) {
         console.error('Failed to load job interactions:', error);
-        // Continue with empty sets if loading fails
         setInteractionsLoaded(true);
       }
     };
@@ -81,7 +78,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     loadInteractions();
   }, [jobs, userEmail, interactionsLoaded]);
   
-  // Filter states
   const [filters, setFilters] = useState({
     workType: [] as string[], // Remote, Onsite, Hybrid
     jobLevel: [] as string[], // Entry Level, Mid Level, Senior Level
@@ -90,8 +86,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     minMatchScore: 0 as number // Minimum match score
   });
 
-  // Apply only manual filters (used for liked/applied/external tabs)
-  // This excludes preference-based filtering but allows manual filtering
   const applyManualFiltersOnly = (jobsToFilter: ScrapedJob[]) => {
     return jobsToFilter.filter(job => {
       // Work Type filter
@@ -143,14 +137,10 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
         if (matchScore < filters.minMatchScore) return false;
       }
 
-      // NOTE: We do NOT filter by user preferences here
-      // These tabs should show all user interactions regardless of current preferences
-
       return true;
     });
   };
 
-  // Apply all filters to jobs (used for main jobs tab)
   const applyFilters = (jobsToFilter: ScrapedJob[]) => {
     return jobsToFilter.filter(job => {
       // Work Type filter
@@ -206,7 +196,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     });
   };
 
-  // Filter jobs based on active tab
   const getFilteredJobs = () => {
     let tabFilteredJobs: ScrapedJob[];
     
@@ -222,19 +211,14 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
         break;
       default:
         tabFilteredJobs = jobs;
-        // For the main jobs tab, apply all filters including preference-based ones
         return applyFilters(tabFilteredJobs);
     }
 
-    // For interaction-based tabs (liked, applied, external), 
-    // show all user interactions regardless of current preferences
-    // but still allow manual filtering if user wants to filter them
     return applyManualFiltersOnly(tabFilteredJobs);
   };
 
   const filteredJobs = getFilteredJobs();
 
-  // Handle filter changes
   const handleFilterChange = (filterType: keyof typeof filters, value: string | number) => {
     setFilters(prev => {
       if (filterType === 'workType' || filterType === 'jobLevel' || filterType === 'jobType') {
@@ -268,7 +252,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
            (filters.minMatchScore > 0 ? 1 : 0);
   };
 
-  // Handle job actions with database persistence
   const handleLikeJob = async (jobId: number) => {
     const job = jobs.find(j => j.id === jobId);
     const isLiked = likedJobs.has(jobId);
@@ -300,11 +283,9 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
   const handleApplyJob = async (jobId: number, jobUrl?: string) => {
     const job = jobs.find(j => j.id === jobId);
     
-    // Set up pending application and show confirmation modal
     setPendingJobApplication({ jobId, jobUrl, job });
     setShowApplyConfirmation(true);
     
-    // Open the job URL immediately so user can apply
     if (jobUrl) {
       window.open(jobUrl, '_blank');
     }
@@ -364,7 +345,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
     }
   };
 
-  // Handle job card click to navigate to job details page
   const handleJobClick = (job: ScrapedJob) => {
     router.push(`/jobs/${job.id}`);
   };
@@ -422,64 +402,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
       </div>
 
       <div className="w-80 space-y-4">
-        {/* <div className="bg-card rounded-lg p-6 border border-border shadow-sm sticky top-6">
-          <div className="flex items-center gap-2 mb-4">
-            <MessageSquare className="w-5 h-5 text-primary" />
-            <h3 className="font-semibold text-card-foreground">Orion AI Assistant</h3>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="space-y-3 text-sm">
-              <h4 className="font-medium text-card-foreground">Tasks I can assist you with:</h4>
-              
-              <div className="space-y-3">
-                <div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <span>🎯</span>
-                    <span>Adjust current preference</span>
-                  </div>
-                  <div className="ml-6 text-xs text-muted-foreground mt-1">
-                    Fine-tune your job search criteria
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <span>⭐</span>
-                    <span>Top Match jobs</span>
-                  </div>
-                  <div className="ml-6 text-xs text-muted-foreground mt-1">
-                    Explore jobs where you shine as a top candidate
-                  </div>
-                </div>
-                
-                <div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <span>💬</span>
-                    <span>Ask Orion</span>
-                  </div>
-                  <div className="ml-6 text-xs text-muted-foreground mt-1">
-                    Get detailed insights on specific jobs
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="pt-4 border-t border-border">
-              <div className="text-xs text-muted-foreground mb-3">Ask me anything...</div>
-              <div className="flex gap-2">
-                <input 
-                  type="text" 
-                  placeholder="Type your question..."
-                  className="flex-1 text-sm px-3 py-2 border border-border rounded-md bg-background"
-                />
-                <Button size="sm" className="px-3">
-                  Send
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div> */}
         <OrionAssistant/>
       </div>
 

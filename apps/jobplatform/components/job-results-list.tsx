@@ -79,7 +79,6 @@ export function JobResultsList({
         />
       ))}
 
-      {/* Infinite scroll trigger and loading indicator */}
       <div ref={loadMoreRef} className="flex justify-center py-8">
         {isLoadingMore && (
           <div className="flex items-center gap-2 text-muted-foreground">

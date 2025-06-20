@@ -194,7 +194,7 @@ export function JobListingPage({ jobs, onLoadMore, hasMoreJobs, isLoading }: Job
             </nav> */}
           </div>
           
-          <div className="flex items-center gap-3">
+          {/* <div className="flex items-center gap-3">
             <div className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-full text-sm">
               🎯 Get Hired Faster with Turbo – Student Discount Available!
             </div>
@@ -208,7 +208,7 @@ export function JobListingPage({ jobs, onLoadMore, hasMoreJobs, isLoading }: Job
               </div>
               <Button variant="outline" size="sm">Quick Guide</Button>
             </div>
-          </div>
+          </div> */}
         </div>
       </div>
 

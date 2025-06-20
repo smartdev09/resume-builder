@@ -6,14 +6,11 @@ import { JobPreferencesStep } from "@/components/steps/job-preferences-step";
 import { MarketSnapshotStep } from "@/components/steps/market-snapshot-step";
 import { ResumeUploadStep } from "@/components/steps/resume-upload-step";
 import { StepIndicator } from "@/components/step-indicator";
-import { JobCard } from "@/components/job-card";
 import { JobrightListing } from "@/components/jobright-listing";
-import { Button } from "@resume/ui/button";
 import { toast } from "@resume/ui/sonner";
 import { useJobMatching } from "@/hooks/use-job-matching";
 import { ScrapedJob, FormData, UserPreferences } from "../types/job-types";
 import { UserPreferencesService } from "../services/user-preferences-service";
-import { JobInteractionsService } from "../services/job-interactions-service";
 
 export function OnboardingSteps() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -361,8 +358,6 @@ export function OnboardingSteps() {
     
     try {
       let newMatches: ScrapedJob[] = [];
-      
-      // First, add any already matched jobs that weren't shown initially
       if (remainingMatches.length > 0) {
         const nextMatches = remainingMatches.slice(0, 10);
         const stillRemainingMatches = remainingMatches.slice(10);
@@ -374,7 +369,6 @@ export function OnboardingSteps() {
         console.log(`Loading ${nextMatches.length} pre-matched jobs, ${stillRemainingMatches.length} still remaining`);
         
       } else if (remainingJobs.length > 0) {
-        // If no pre-matched jobs, process more from unprocessed jobs
         const nextBatch = remainingJobs.slice(0, 25);
         const stillRemaining = remainingJobs.slice(25);
         
@@ -383,11 +377,9 @@ export function OnboardingSteps() {
         const userPreferences = convertToUserPreferences(formData);
         const batchMatches = await matchJobs(nextBatch, userPreferences, null, true); // Pass null since we're using keyword matching only
         
-        // Take up to 10 new matches
         newMatches = batchMatches.slice(0, 10);
         const extraMatches = batchMatches.slice(10);
         
-        // Update remaining data
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (window as any).remainingJobs = stillRemaining;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -397,17 +389,15 @@ export function OnboardingSteps() {
       }
       
       if (newMatches.length > 0) {
-        // Combine with existing matches and remove duplicates
         const allMatches = [...matchedJobs, ...newMatches];
         const uniqueMatches = allMatches.filter((job, index, self) => 
           index === self.findIndex(j => j.id === job.id)
         );
         
         setMatchedJobs(uniqueMatches);
-        toast.success(`Loaded ${newMatches.length} more job matches!`);
+        // toast.success(`Loaded ${newMatches.length} more job matches!`);
       }
       
-      // Check if there are still more jobs to load
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const stillHasMatches = ((window as any).remainingMatches || []).length > 0;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -452,7 +442,6 @@ export function OnboardingSteps() {
     />,
   ];
 
-  // Show loading state while checking for existing preferences
   if (loadingExistingPreferences) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">

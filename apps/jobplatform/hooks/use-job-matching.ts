@@ -23,7 +23,7 @@ export const useJobMatching = () => {
 
     // TEMPORARILY DISABLED: AI matching is commented out to use only keyword matching
     // Use keyword matching only
-    toast.info("Using advanced keyword matching for job analysis");
+    // toast.info("Using advanced keyword matching for job analysis");
     console.log("Jobs before keyword matching:", jobs);
     const keywordMatches = KeywordMatchingService.matchJobs(jobs, userPreferences);
     return keywordMatches.map(match => ({

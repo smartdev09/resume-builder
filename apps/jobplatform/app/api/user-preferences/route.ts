@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@resume/db";
 
-// Save user job preferences from onboarding
 export async function POST(request: NextRequest) {
   try {
     // TODO: Add authentication when NextAuth is set up
@@ -14,21 +13,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "User email is required" }, { status: 400 });
     }
 
-    // First, find the user by email
     const user = await prisma.user.findUnique({
       where: { email: userEmail }
     });
 
     if (!user) {
-      // Create a new user if they don't exist
       const newUser = await prisma.user.create({
         data: {
           email: userEmail,
-          name: userEmail.split('@')[0] // Use email prefix as name
+          name: userEmail.split('@')[0]
         }
       });
       
-      // Create preferences for new user
       const preferences = await prisma.userJobPreferences.create({
         data: {
           userId: newUser.id,
@@ -48,13 +44,11 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Deactivate any existing preferences
     await prisma.userJobPreferences.updateMany({
       where: { userId: user.id },
       data: { isActive: false }
     });
 
-    // Create new preferences
     const preferences = await prisma.userJobPreferences.create({
       data: {
         userId: user.id,
@@ -82,7 +76,6 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Get user job preferences
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -92,7 +85,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User email is required" }, { status: 400 });
     }
 
-    // Find the user by email
     const user = await prisma.user.findUnique({
       where: { email: userEmail }
     });
@@ -104,7 +96,6 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Get active preferences
     const preferences = await prisma.userJobPreferences.findFirst({
       where: { 
         userId: user.id,
