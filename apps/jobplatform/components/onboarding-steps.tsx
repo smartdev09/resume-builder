@@ -6,11 +6,11 @@ import { JobPreferencesStep } from "@/components/steps/job-preferences-step";
 import { MarketSnapshotStep } from "@/components/steps/market-snapshot-step";
 import { ResumeUploadStep } from "@/components/steps/resume-upload-step";
 import { StepIndicator } from "@/components/step-indicator";
-import { JobCard } from "@/components/job-card";
-import { Button } from "@resume/ui/button";
+import { JobrightListing } from "@/components/jobright-listing";
 import { toast } from "@resume/ui/sonner";
 import { useJobMatching } from "@/hooks/use-job-matching";
 import { ScrapedJob, FormData, UserPreferences } from "../types/job-types";
+import { UserPreferencesService } from "../services/user-preferences-service";
 
 export function OnboardingSteps() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -27,12 +27,15 @@ export function OnboardingSteps() {
   const [isLoading, setIsLoading] = useState(false);
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [groqClient, setGroqClient] = useState<Groq | null>(null);
-  const [showAllJobs, setShowAllJobs] = useState(false);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
+  const [userEmail, setUserEmail] = useState<string>("user@example.com"); // TODO: Get from authentication
+  const [loadingExistingPreferences, setLoadingExistingPreferences] = useState(true);
+  const [isAutoLoaded, setIsAutoLoaded] = useState(false); // Track if jobs were auto-loaded from preferences
 
   const { matchJobs, processingBatch, batchProgress } = useJobMatching();
 
-  // Initialize Groq client
+  // COMMENTED OUT: Groq client initialization - using keyword matching only
+  /*
   useEffect(() => {
     const initializeGroq = async () => {
       try {
@@ -44,12 +47,142 @@ export function OnboardingSteps() {
         console.log("Groq client initialized successfully");
       } catch (error) {
         console.error("Error initializing Groq client:", error);
-        toast.error("Unable to load AI matching service. Please try refreshing the page.");
+        toast.warning("AI matching service unavailable. Will use keyword-based matching instead.");
       }
     };
     
     initializeGroq();
   }, []);
+  */
+
+  // Check for existing user preferences when component loads
+  useEffect(() => {
+    const loadExistingPreferences = async () => {
+      try {
+        const existingPreferences = await UserPreferencesService.getPreferences(userEmail);
+        
+        if (existingPreferences) {
+          console.log("Found existing preferences:", existingPreferences);
+          
+          // Populate form data with existing preferences
+          setFormData({
+            jobFunction: existingPreferences.jobFunction,
+            jobType: existingPreferences.jobType,
+            location: existingPreferences.location,
+            openToRemote: existingPreferences.openToRemote,
+            workAuthorization: {
+              h1bSponsorship: existingPreferences.needsSponsorship,
+            },
+          });
+
+          // Auto-load jobs based on existing preferences
+          await autoLoadJobsFromPreferences(existingPreferences);
+        } else {
+          console.log("No existing preferences found, starting fresh onboarding");
+        }
+      } catch (error) {
+        console.error("Error loading existing preferences:", error);
+      } finally {
+        setLoadingExistingPreferences(false);
+      }
+    };
+
+    loadExistingPreferences();
+  }, [userEmail]);
+
+  // Auto-load jobs based on saved preferences
+  const autoLoadJobsFromPreferences = async (preferences: any) => {
+    setIsLoading(true);
+    
+    try {
+      const response = await fetch("/api/scrape", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Server responded with status: ${response.status}`);
+      }
+      
+      const allJobs = await response.json();
+      console.log(`Auto-loading jobs: Fetched ${allJobs.length} total jobs from API`);
+      
+      if (!allJobs || allJobs.length === 0) {
+        console.warn("No jobs found in the database for auto-loading");
+        return;
+      }
+
+      const userPreferences = {
+        jobFunction: preferences.jobFunction,
+        jobType: preferences.jobType,
+        location: preferences.location,
+        openToRemote: preferences.openToRemote,
+        needsSponsorship: preferences.needsSponsorship
+      };
+
+      let matchedJobsList: ScrapedJob[] = [];
+      let processedCount = 0;
+      const TARGET_INITIAL_JOBS = 10;
+      const BATCH_SIZE = 25;
+
+      const handleProgressUpdate = (currentMatches: ScrapedJob[]) => {
+        setMatchedJobs(currentMatches);
+        if (!onboardingComplete) {
+          setOnboardingComplete(true);
+        }
+      };
+
+      // Process jobs in batches for auto-loading
+      for (let i = 0; i < allJobs.length && matchedJobsList.length < TARGET_INITIAL_JOBS; i += BATCH_SIZE) {
+        const batch = allJobs.slice(i, i + BATCH_SIZE);
+        console.log(`Auto-loading: Processing batch ${Math.floor(i/BATCH_SIZE) + 1}, jobs ${i + 1}-${Math.min(i + BATCH_SIZE, allJobs.length)}`);
+        
+        const batchMatches = await matchJobs(batch, userPreferences, null, true); // Pass null since we're using keyword matching only
+        matchedJobsList = [...matchedJobsList, ...batchMatches];
+        processedCount += batch.length;
+        
+        // Update UI with current matches
+        handleProgressUpdate(matchedJobsList.slice(0, TARGET_INITIAL_JOBS));
+        
+        if (matchedJobsList.length >= TARGET_INITIAL_JOBS) {
+          break;
+        }
+      }
+
+      // Store remaining data for "Load More" functionality
+      const remainingJobs = allJobs.slice(processedCount);
+      const remainingMatches = matchedJobsList.slice(TARGET_INITIAL_JOBS);
+      
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).remainingJobs = remainingJobs;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (window as any).remainingMatches = remainingMatches;
+      
+      const hasMore = remainingJobs.length > 0 || remainingMatches.length > 0;
+      setHasMoreJobs(hasMore);
+      
+      const finalMatches = matchedJobsList.slice(0, TARGET_INITIAL_JOBS);
+      setMatchedJobs(finalMatches);
+      setOnboardingComplete(true);
+      setIsAutoLoaded(true);
+      
+      console.log(`Auto-loaded ${finalMatches.length} jobs based on saved preferences for ${userPreferences.jobFunction} in ${userPreferences.location}`);
+      
+      // Show success message to user
+      if (finalMatches.length > 0) {
+        setTimeout(() => {
+          // Delay to show the banner after the UI loads
+        }, 100);
+      }
+      
+    } catch (error) {
+      console.error("Error auto-loading jobs:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const updateFormData = (data: Partial<FormData>) => {
     setFormData((prev) => ({ ...prev, ...data }));
@@ -83,6 +216,19 @@ export function OnboardingSteps() {
     setIsLoading(true);
     
     try {
+      // Save user preferences to database
+      const preferences = convertToUserPreferences(formData);
+      try {
+        await UserPreferencesService.savePreferences({
+          ...preferences,
+          userEmail
+        });
+        console.log("User preferences saved successfully");
+      } catch (prefError) {
+        console.warn("Failed to save preferences to database:", prefError);
+        // Continue with job matching even if preferences save fails
+      }
+
       const response = await fetch("/api/scrape", {
         method: "GET",
         headers: {
@@ -102,34 +248,89 @@ export function OnboardingSteps() {
         return;
       }
 
-      // Process first batch of jobs to show initial results quickly
-      const initialBatch = allJobs.slice(0, 15);
-      const remainingJobs = allJobs.slice(15);
-      
-      setHasMoreJobs(remainingJobs.length > 0);
-
       const userPreferences = convertToUserPreferences(formData);
-      const matchedJobsList = await matchJobs(
-        initialBatch, 
-        userPreferences, 
-        groqClient, 
-        false, 
-        handleProgressUpdate
-      );
+      let matchedJobsList: ScrapedJob[] = [];
+      let processedCount = 0;
+      const TARGET_INITIAL_JOBS = 10;
+      const DISPLAY_THRESHOLD = 5; // Show UI when 5 jobs are found
+      const BATCH_SIZE = 25; // Larger batch for better location matching
+      let hasDisplayedUI = false;
       
-      setMatchedJobs(matchedJobsList);
+      while (matchedJobsList.length < TARGET_INITIAL_JOBS && processedCount < allJobs.length) {
+        const currentBatch = allJobs.slice(processedCount, processedCount + BATCH_SIZE);
+        
+        if (currentBatch.length === 0) break;
+        
+        console.log(`Processing batch ${Math.floor(processedCount/BATCH_SIZE) + 1}: ${currentBatch.length} jobs for ${userPreferences.location}`);
+        
+        try {
+          const batchMatches = await matchJobs(
+            currentBatch, 
+            userPreferences, 
+            null, // Pass null since we're using keyword matching only
+            false, 
+            (currentMatches) => {
+              // Update UI with current matches as they come in
+              if (currentMatches.length >= DISPLAY_THRESHOLD && !hasDisplayedUI) {
+                setMatchedJobs(currentMatches);
+                setOnboardingComplete(true);
+                hasDisplayedUI = true;
+                toast.success(`Found ${currentMatches.length} matching jobs in ${userPreferences.location}! Loading more...`);
+              } else if (hasDisplayedUI && currentMatches.length > matchedJobsList.length) {
+                setMatchedJobs(currentMatches);
+              }
+            }
+          );
+          
+          // Combine matches and remove duplicates
+          const combinedMatches = [...matchedJobsList, ...batchMatches];
+          matchedJobsList = combinedMatches.filter((job, index, self) => 
+            index === self.findIndex(j => j.id === job.id)
+          );
+        } catch (error) {
+          console.error(`Error processing batch ${Math.floor(processedCount/BATCH_SIZE) + 1}:`, error);
+          
+          // If we hit rate limits, show a helpful message and continue with what we have
+          if (error && typeof error === 'object' && 'message' in error && 
+              (error as any).message?.includes('Rate limit')) {
+            toast.warning(`Rate limit reached. Showing results found so far. You can click "Load More" to continue.`);
+            break; // Exit the loop and show current results
+          }
+                 }
+        
+        processedCount += BATCH_SIZE;
+        
+        // If we have enough matches, break early
+        if (matchedJobsList.length >= TARGET_INITIAL_JOBS) {
+          break;
+        }
+      }
+      
+      // Sort by match score
+      matchedJobsList.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+      
+      // Take top 10 for initial display
+      const initialMatches = matchedJobsList.slice(0, TARGET_INITIAL_JOBS);
+      const remainingMatches = matchedJobsList.slice(TARGET_INITIAL_JOBS);
+      const unprocessedJobs = allJobs.slice(processedCount);
+      
+      setMatchedJobs(initialMatches);
       setOnboardingComplete(true);
       
-      if (matchedJobsList.length > 0) {
-        toast.success(`Found ${matchedJobsList.length} initial matches! ${remainingJobs.length > 0 ? 'Click "Load More" for additional results.' : ''}`);
-      } else {
-        toast.info(`Processing initial ${initialBatch.length} jobs. ${remainingJobs.length > 0 ? 'More jobs available - click "Load More" to see additional results.' : 'No matches found in initial batch.'}`);
+      // Determine if there are more jobs available
+      const hasMore = remainingMatches.length > 0 || unprocessedJobs.length > 0;
+      setHasMoreJobs(hasMore);
+      
+      // Store remaining data for load more functionality
+      if (hasMore) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).remainingMatches = remainingMatches;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).remainingJobs = unprocessedJobs;
+        console.log(`Stored ${remainingMatches.length} remaining matches and ${unprocessedJobs.length} unprocessed jobs`);
       }
       
-      if (remainingJobs.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any).remainingJobs = remainingJobs;
-      }
+      toast.success(`Found ${initialMatches.length} ${userPreferences.jobFunction} jobs in ${userPreferences.location}! ${hasMore ? 'Click "Load More" for additional results.' : ''}`);
       
     } catch (error) {
       console.error("Error fetching jobs:", error);
@@ -141,33 +342,76 @@ export function OnboardingSteps() {
 
   const handleLoadMore = async () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const remainingJobs = (window as any).remainingJobs;
-    if (!remainingJobs || remainingJobs.length === 0) {
+    const remainingMatches = (window as any).remainingMatches || [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const remainingJobs = (window as any).remainingJobs || [];
+    
+    console.log(`Load More clicked: ${remainingMatches.length} remaining matches, ${remainingJobs.length} remaining jobs`);
+    
+    if (remainingMatches.length === 0 && remainingJobs.length === 0) {
+      toast.info("No more jobs available to load.");
       setHasMoreJobs(false);
       return;
     }
-
+    
     setIsLoading(true);
     
     try {
-      const nextBatch = remainingJobs.slice(0, 15);
-      const stillRemaining = remainingJobs.slice(15);
+      let newMatches: ScrapedJob[] = [];
+      if (remainingMatches.length > 0) {
+        const nextMatches = remainingMatches.slice(0, 10);
+        const stillRemainingMatches = remainingMatches.slice(10);
+        
+        newMatches = nextMatches;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).remainingMatches = stillRemainingMatches;
+        
+        console.log(`Loading ${nextMatches.length} pre-matched jobs, ${stillRemainingMatches.length} still remaining`);
+        
+      } else if (remainingJobs.length > 0) {
+        const nextBatch = remainingJobs.slice(0, 25);
+        const stillRemaining = remainingJobs.slice(25);
+        
+        console.log(`Processing ${nextBatch.length} new jobs, ${stillRemaining.length} still unprocessed`);
+        
+        const userPreferences = convertToUserPreferences(formData);
+        const batchMatches = await matchJobs(nextBatch, userPreferences, null, true); // Pass null since we're using keyword matching only
+        
+        newMatches = batchMatches.slice(0, 10);
+        const extraMatches = batchMatches.slice(10);
+        
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).remainingJobs = stillRemaining;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (window as any).remainingMatches = extraMatches;
+        
+        console.log(`Found ${batchMatches.length} total matches, showing ${newMatches.length}, storing ${extraMatches.length} extra`);
+      }
       
-      const userPreferences = convertToUserPreferences(formData);
-      const newMatches = await matchJobs(nextBatch, userPreferences, groqClient, true);
+      if (newMatches.length > 0) {
+        const allMatches = [...matchedJobs, ...newMatches];
+        const uniqueMatches = allMatches.filter((job, index, self) => 
+          index === self.findIndex(j => j.id === job.id)
+        );
+        
+        setMatchedJobs(uniqueMatches);
+        // toast.success(`Loaded ${newMatches.length} more job matches!`);
+      }
       
-      // Combine with existing matches and sort
-      const allMatches = [...matchedJobs, ...newMatches];
-      const uniqueMatches = allMatches.filter((job, index, self) => 
-        index === self.findIndex(j => j.id === job.id)
-      );
-      
-      setMatchedJobs(uniqueMatches);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (window as any).remainingJobs = stillRemaining;
-      setHasMoreJobs(stillRemaining.length > 0);
+      const stillHasMatches = ((window as any).remainingMatches || []).length > 0;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const stillHasJobs = ((window as any).remainingJobs || []).length > 0;
+      const stillHasMore = stillHasMatches || stillHasJobs;
       
-      toast.success(`Loaded ${newMatches.length} more matches!`);
+      setHasMoreJobs(stillHasMore);
+      
+      console.log(`After load more: ${stillHasMatches} remaining matches, ${stillHasJobs} remaining jobs, hasMore: ${stillHasMore}`);
+      
+      if (newMatches.length === 0 && !stillHasMore) {
+        toast.info("No more matching jobs found.");
+        setHasMoreJobs(false);
+      }
       
     } catch (error) {
       console.error("Error loading more jobs:", error);
@@ -198,105 +442,28 @@ export function OnboardingSteps() {
     />,
   ];
 
+  if (loadingExistingPreferences) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+          <p className="text-muted-foreground">Checking for saved preferences...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {onboardingComplete ? (
-        <div className="bg-card rounded-3xl p-8 shadow-sm border border-border">
-          <div className="mb-8 text-center">
-            <h2 className="text-2xl font-bold mb-2 text-card-foreground">
-              {showAllJobs ? "All Job Matches" : "Onboarding Complete!"}
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              {matchedJobs.length > 0 
-                ? `We've found ${matchedJobs.length} job matches based on your preferences.`
-                : "Processing job matches for your preferences..."
-              }
-              {processingBatch && (
-                <span className="block text-sm text-muted-foreground mt-2">
-                  Processing batch {batchProgress.current}/{batchProgress.total}...
-                </span>
-              )}
-            </p>
-          </div>
-          
-          {matchedJobs.length > 0 ? (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="text-lg font-semibold text-card-foreground">
-                  {showAllJobs ? `All ${matchedJobs.length} Matches:` : "Top 5 Matches:"}
-                </h3>
-                {!showAllJobs && matchedJobs.length > 5 && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => setShowAllJobs(true)}
-                    className="text-sm"
-                  >
-                    Show All {matchedJobs.length} Jobs
-                  </Button>
-                )}
-              </div>
-              
-              <div className="grid gap-4">
-                {(showAllJobs ? matchedJobs : matchedJobs.slice(0, 5)).map((job) => (
-                  <JobCard key={job.id} job={job} showDescription={showAllJobs} />
-                ))}
-              </div>
-              
-              {hasMoreJobs && (
-                <div className="text-center mt-6">
-                  <Button 
-                    variant="outline"
-                    onClick={handleLoadMore}
-                    disabled={isLoading || processingBatch}
-                    className="px-6"
-                  >
-                    {isLoading ? "Loading More..." : "Load More Jobs"}
-                  </Button>
-                </div>
-              )}
-            </div>
-          ) : (
-            <div className="text-center">
-              <p className="text-muted-foreground mb-4">
-                No matches found yet. {hasMoreJobs ? "Try loading more jobs to find better matches." : ""}
-              </p>
-              {hasMoreJobs && (
-                <Button 
-                  variant="outline"
-                  onClick={handleLoadMore}
-                  disabled={isLoading || processingBatch}
-                  className="px-6"
-                >
-                  {isLoading ? "Loading More..." : "Load More Jobs"}
-                </Button>
-              )}
-            </div>
-          )}
-          
-          <div className="mt-8 flex justify-center gap-4">
-            {showAllJobs && matchedJobs.length > 0 && (
-              <Button 
-                variant="outline"
-                onClick={() => setShowAllJobs(false)}
-                className="rounded-full px-8"
-              >
-                Back to Summary
-              </Button>
-            )}
-            <Button 
-              className="rounded-full bg-primary text-primary-foreground px-8 hover:bg-primary/90"
-              onClick={() => {
-                if (!showAllJobs && matchedJobs.length > 0) {
-                  setShowAllJobs(true);
-                } else {
-                  toast.info("This would export results or navigate to dashboard in a complete application");
-                }
-              }}
-            >
-              {showAllJobs || matchedJobs.length === 0 ? "Export Results" : "View All Matches"}
-            </Button>
-          </div>
-        </div>
+        <JobrightListing 
+          jobs={matchedJobs}
+          onLoadMore={handleLoadMore}
+          hasMoreJobs={hasMoreJobs}
+          isLoading={isLoading || processingBatch}
+          userPreferences={convertToUserPreferences(formData)}
+          isAutoLoaded={isAutoLoaded}
+        />
       ) : (
         <>
           {steps[currentStep]}
