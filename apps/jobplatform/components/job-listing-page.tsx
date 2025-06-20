@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { ScrapedJob } from "../types/job-types";
-import { Search, MapPin, Clock, Building2, Briefcase, Filter, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar } from "lucide-react";
+import { Search, MapPin, Clock, Building2, Briefcase, Filter, ChevronDown, MoreHorizontal, Heart, Bookmark, Calendar, Loader2 } from "lucide-react";
 import { Button } from "@resume/ui/button";
 import { Badge } from "@resume/ui/badge";
 import { formatTimeAgoWithTooltip } from "../lib/time-utils";
+import { useInfiniteScroll } from "../hooks/use-infinite-scroll";
 
 interface JobListingPageProps {
   jobs: ScrapedJob[];
@@ -157,6 +158,12 @@ export function JobListingPage({ jobs, onLoadMore, hasMoreJobs, isLoading }: Job
     level: "Entry Level"
   });
 
+  const { loadMoreRef } = useInfiniteScroll({
+    hasMore: hasMoreJobs || false,
+    isLoading: isLoading || false,
+    onLoadMore: onLoadMore || (() => {})
+  });
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -170,7 +177,7 @@ export function JobListingPage({ jobs, onLoadMore, hasMoreJobs, isLoading }: Job
               <h1 className="text-xl font-bold">Jobright</h1>
             </div>
             
-            <nav className="flex items-center gap-6">
+            {/* <nav className="flex items-center gap-6">
               <div className="flex items-center gap-1 px-3 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium">
                 <Briefcase className="w-4 h-4" />
                 JOBS
@@ -184,7 +191,7 @@ export function JobListingPage({ jobs, onLoadMore, hasMoreJobs, isLoading }: Job
               <button className="flex items-center gap-1 px-3 py-2 text-gray-600 hover:text-gray-900 text-sm">
                 External <Badge variant="secondary" className="ml-1">0</Badge>
               </button>
-            </nav>
+            </nav> */}
           </div>
           
           <div className="flex items-center gap-3">
@@ -328,19 +335,20 @@ export function JobListingPage({ jobs, onLoadMore, hasMoreJobs, isLoading }: Job
             ))}
           </div>
 
-          {/* Load More */}
-          {hasMoreJobs && (
-            <div className="text-center mt-8">
-              <Button 
-                variant="outline" 
-                onClick={onLoadMore}
-                disabled={isLoading}
-                className="px-8"
-              >
-                {isLoading ? "Loading..." : "Load More Jobs"}
-              </Button>
-            </div>
-          )}
+          {/* Infinite scroll trigger and loading indicator */}
+          <div ref={loadMoreRef} className="text-center mt-8">
+            {isLoading && (
+              <div className="flex items-center justify-center gap-2 text-gray-600">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>Loading more jobs...</span>
+              </div>
+            )}
+            {!hasMoreJobs && jobs.length > 0 && (
+              <div className="text-gray-500">
+                <p>You've reached the end of available jobs</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

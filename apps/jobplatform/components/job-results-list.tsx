@@ -2,8 +2,8 @@
 
 import { ScrapedJob } from "../types/job-types";
 import { JobCard } from "./job-card";
-import { Button } from "@resume/ui/button";
 import { Loader2 } from "lucide-react";
+import { useInfiniteScroll } from "../hooks/use-infinite-scroll";
 
 interface JobResultsListProps {
   jobs: ScrapedJob[];
@@ -39,6 +39,12 @@ export function JobResultsList({
   noResultsMessage
 }: JobResultsListProps) {
   const displayJobs = activeTab === "jobs" ? matchedJobs : jobs;
+  
+  const { loadMoreRef } = useInfiniteScroll({
+    hasMore,
+    isLoading: isLoadingMore,
+    onLoadMore
+  });
 
   if (displayJobs.length === 0) {
     return (
@@ -73,24 +79,20 @@ export function JobResultsList({
         />
       ))}
 
-      {hasMore && (
-        <div className="flex justify-center py-8">
-          <Button
-            disabled={isLoadingMore}
-            onClick={onLoadMore}
-            className="px-8 py-3"
-          >
-            {isLoadingMore ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading more jobs...
-              </>
-            ) : (
-              "Load More Jobs"
-            )}
-          </Button>
-        </div>
-      )}
+      {/* Infinite scroll trigger and loading indicator */}
+      <div ref={loadMoreRef} className="flex justify-center py-8">
+        {isLoadingMore && (
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" />
+            <span>Loading more jobs...</span>
+          </div>
+        )}
+        {!hasMore && displayJobs.length > 0 && (
+          <div className="text-center text-muted-foreground">
+            <p>You've reached the end of available jobs</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 } 
