@@ -227,7 +227,7 @@ export default function LandingPage({ initialReviews }: LandingPageProps) {
               </div>
               <div className="flex gap-2 mt-4 md:mt-0">
                 <Link href={buildResumeUrl} className="z-10 w-48">
-                  <Button className="border px-6 py-6 text-md text-white">
+                  <Button className="border px-6 py-6 text-md">
                     Build your resume
                   </Button>
                   <p className="text-gray-500 text-xs pt-2 text-center">Choose from 7 templares</p>

@@ -98,14 +98,15 @@ export function MarketSnapshotStep({
 
       <div className="mt-8 flex justify-between">
         <Button
+          variant="secondary"
           onClick={onBack}
-          className="rounded-full bg-secondary text-secondary-foreground px-8 hover:bg-secondary/90"
+          className="rounded-full px-8"
         >
           Back
         </Button>
         <Button
           onClick={handleNext}
-          className="rounded-full bg-primary text-primary-foreground px-8 hover:bg-primary/90"
+          className="rounded-full px-8"
         >
           Next
         </Button>

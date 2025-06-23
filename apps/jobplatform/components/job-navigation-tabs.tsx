@@ -2,6 +2,7 @@
 
 import { Briefcase } from "lucide-react";
 import { Badge } from "@resume/ui/badge";
+import { Button } from "@resume/ui/button";
 
 type TabType = "jobs" | "liked" | "applied" | "external";
 
@@ -30,48 +31,40 @@ export function JobNavigationTabs({
 }: JobNavigationTabsProps) {
   return (
     <div className="bg-card rounded-lg p-4 border border-border shadow-sm">
-      <nav className="flex items-center gap-6 mb-4">
-        <button 
-          className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-            activeTab === 'jobs' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          }`}
+      <nav className="flex items-center gap-1 mb-4">
+        <Button 
+          variant={activeTab === 'jobs' ? 'default' : 'ghost'}
+          size="sm"
           onClick={() => onTabChange('jobs')}
+          className="gap-1"
         >
           <Briefcase className="w-4 h-4" />
           JOBS
-        </button>
-        <button 
-          className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors ${
-            activeTab === 'liked' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          }`}
+        </Button>
+        <Button 
+          variant={activeTab === 'liked' ? 'default' : 'ghost'}
+          size="sm"
           onClick={() => onTabChange('liked')}
+          className="gap-1"
         >
           Liked <Badge variant="secondary" className="ml-1">{likedCount}</Badge>
-        </button>
-        <button 
-          className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors ${
-            activeTab === 'applied' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          }`}
+        </Button>
+        <Button 
+          variant={activeTab === 'applied' ? 'default' : 'ghost'}
+          size="sm"
           onClick={() => onTabChange('applied')}
+          className="gap-1"
         >
           Applied <Badge variant="secondary" className="ml-1">{appliedCount}</Badge>
-        </button>
-        <button 
-          className={`flex items-center gap-1 px-3 py-2 rounded-lg text-sm transition-colors ${
-            activeTab === 'external' 
-              ? 'bg-primary text-primary-foreground' 
-              : 'text-muted-foreground hover:text-foreground hover:bg-muted'
-          }`}
+        </Button>
+        <Button 
+          variant={activeTab === 'external' ? 'default' : 'ghost'}
+          size="sm"
           onClick={() => onTabChange('external')}
+          className="gap-1"
         >
           External <Badge variant="secondary" className="ml-1">{externalCount}</Badge>
-        </button>
+        </Button>
       </nav>
 
       {/* User Preferences Display */}

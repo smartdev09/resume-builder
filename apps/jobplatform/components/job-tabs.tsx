@@ -28,8 +28,8 @@ export function JobTabs({ activeTab, onTabChange, counters }: JobTabsProps) {
           variant={activeTab === tab.id ? "default" : "ghost"}
           className={`px-4 py-2 rounded-none border-b-2 transition-colors ${
             activeTab === tab.id
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted"
+              ? "border-primary"
+              : "border-transparent"
           }`}
           onClick={() => onTabChange(tab.id)}
         >
