@@ -32,7 +32,7 @@ export function JobDetailsActions({
           className={`flex-1 px-6 py-3 text-base font-medium ${
             isApplied 
               ? 'bg-green-600 hover:bg-green-700 text-white' 
-              : 'bg-primary hover:bg-primary/90 text-primary-foreground'
+              : ''
           }`}
           onClick={() => onApply?.(job.id, job.job_url)}
           disabled={isApplied}
@@ -61,8 +61,10 @@ export function JobDetailsActions({
       {/* Secondary Actions */}
       <div className="flex items-center justify-between pt-4 border-t border-border">
         <div className="flex items-center gap-3">
-          <button 
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          <Button 
+            variant="ghost"
+            size="sm"
+            className={`${
               isLiked 
                 ? 'text-red-500 bg-red-500/10 hover:bg-red-500/20' 
                 : 'text-muted-foreground hover:text-red-500 hover:bg-red-500/10'
@@ -70,12 +72,14 @@ export function JobDetailsActions({
             onClick={() => onLike?.(job.id)}
             title={isLiked ? "Unlike job" : "Like job"}
           >
-            <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
+            <Heart className={`w-4 h-4 mr-2 ${isLiked ? 'fill-current' : ''}`} />
             {isLiked ? 'Liked' : 'Like'}
-          </button>
+          </Button>
 
-          <button 
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          <Button 
+            variant="ghost"
+            size="sm"
+            className={`${
               isExternal 
                 ? 'text-blue-500 bg-blue-500/10 hover:bg-blue-500/20' 
                 : 'text-muted-foreground hover:text-blue-500 hover:bg-blue-500/10'
@@ -83,9 +87,9 @@ export function JobDetailsActions({
             onClick={() => onExternal?.(job.id)}
             title={isExternal ? "Remove from saved" : "Save for later"}
           >
-            <Bookmark className={`w-4 h-4 ${isExternal ? 'fill-current' : ''}`} />
+            <Bookmark className={`w-4 h-4 mr-2 ${isExternal ? 'fill-current' : ''}`} />
             {isExternal ? 'Saved' : 'Save'}
-          </button>
+          </Button>
         </div>
       </div>
     </div>

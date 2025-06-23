@@ -94,25 +94,29 @@ export function JobCard({
           </div>
           
           <div className="flex items-center gap-3" onClick={(e) => e.stopPropagation()}>
-            <button 
-              className="p-2 text-muted-foreground hover:text-foreground"
+            <Button 
+              variant="ghost"
+              size="icon"
               onClick={() => onExternal?.(job.id)}
               title="Save for later"
+              className={isExternal ? 'text-blue-500' : ''}
             >
-              <Bookmark className={`w-5 h-5 ${isExternal ? 'fill-current text-blue-500' : ''}`} />
-            </button>
-            <button 
-              className={`p-2 hover:text-red-500 ${isLiked ? 'text-red-500' : 'text-muted-foreground'}`}
+              <Bookmark className={`w-5 h-5 ${isExternal ? 'fill-current' : ''}`} />
+            </Button>
+            <Button 
+              variant="ghost"
+              size="icon"
               onClick={() => onLike?.(job.id)}
               title={isLiked ? "Unlike job" : "Like job"}
+              className={isLiked ? 'text-red-500 hover:text-red-600' : 'hover:text-red-500'}
             >
               <Heart className={`w-5 h-5 ${isLiked ? 'fill-current' : ''}`} />
-            </button>
+            </Button>
             <Button variant="outline" className="text-sm">
               ⭐ ASK ORION
             </Button>
             <Button 
-              className={`px-6 hover:bg-primary/90 ${isApplied ? 'bg-green-600 text-white' : 'bg-primary text-primary-foreground'}`}
+              className={`px-6 ${isApplied ? 'bg-green-600 hover:bg-green-700 text-white' : ''}`}
               onClick={() => onApply?.(job.id, job.job_url)}
               disabled={isApplied}
             >

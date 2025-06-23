@@ -97,7 +97,7 @@ const JobCard = ({ job, matchScore = Math.floor(Math.random() * 30) + 70 }: JobC
             <Button variant="outline" className="text-sm">
               ⭐ ASK ORION
             </Button>
-            <Button className="bg-emerald-500 hover:bg-emerald-600 text-white px-6">
+            <Button className="bg-green-600 hover:bg-green-700 text-white px-6">
               APPLY NOW
             </Button>
           </div>
