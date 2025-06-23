@@ -2,13 +2,11 @@
 
 import { Button } from "@resume/ui/button";
 import { FileText, Palette, Bot, BarChart3, Layout, Zap } from "lucide-react";
-import cn from "@resume/ui/cn";
 
 interface ToolButton {
   id: string;
   icon: React.ReactNode;
   label: string;
-  active?: boolean;
 }
 
 interface FeatureToolbarProps {
@@ -22,8 +20,7 @@ const toolsByFeature: Record<string, ToolButton[]> = {
     {
       id: 'edit',
       icon: <FileText className="w-4 h-4" />,
-      label: 'Edit',
-      active: true
+      label: 'Edit'
     },
     {
       id: 'style',
@@ -55,8 +52,7 @@ const toolsByFeature: Record<string, ToolButton[]> = {
     {
       id: 'practice',
       icon: <FileText className="w-4 h-4" />,
-      label: 'Practice',
-      active: true
+      label: 'Practice'
     },
     {
       id: 'questions',
@@ -73,8 +69,7 @@ const toolsByFeature: Record<string, ToolButton[]> = {
     {
       id: 'search',
       icon: <FileText className="w-4 h-4" />,
-      label: 'Search',
-      active: true
+      label: 'Search'
     },
     {
       id: 'tracker',
@@ -98,15 +93,10 @@ export default function FeatureToolbar({ activeFeature, activeTool, onToolChange
         {tools.map((tool) => (
           <Button
             key={tool.id}
-            variant="ghost"
+            variant={activeTool === tool.id ? "default" : "ghost"}
             size="sm"
             onClick={() => onToolChange(tool.id)}
-            className={cn(
-              "flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-md transition-all",
-              activeTool === tool.id || tool.active
-                ? "bg-white dark:bg-gray-600 text-primary shadow-sm"
-                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-white/50 dark:hover:bg-gray-600/50"
-            )}
+            className="gap-2"
           >
             {tool.icon}
             <span className="hidden sm:inline">{tool.label}</span>

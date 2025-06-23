@@ -110,9 +110,10 @@ export default function NewResumeEditor({ resumeToEdit }: NewResumeEditorProps) 
               
               return (
                 <div key={step.key} className="rounded-lg overflow-hidden">
-                  <button
+                  <Button
+                    variant="ghost"
                     onClick={() => toggleSection(step.key)}
-                    className="w-full flex items-center border-b border-gray-200 dark:border-gray-700 justify-between p-3 sm:p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors text-left"
+                    className="w-full justify-between p-3 sm:p-4 h-auto border-b border-gray-200 dark:border-gray-700 rounded-none"
                   >
                     <div className="flex items-center gap-2 sm:gap-3">
                       {isExpanded ? (
@@ -122,7 +123,7 @@ export default function NewResumeEditor({ resumeToEdit }: NewResumeEditorProps) 
                       )}
                       <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100">{step.title}</h3>
                     </div>
-                  </button>
+                  </Button>
                   
                   {isExpanded && (
                     <div className="pl-8 sm:pl-10 pr-3 sm:pr-4 pb-3 sm:pb-4">
