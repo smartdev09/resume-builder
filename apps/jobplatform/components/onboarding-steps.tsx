@@ -11,6 +11,7 @@ import { toast } from "@resume/ui/sonner";
 import { useJobMatching } from "@/hooks/use-job-matching";
 import { ScrapedJob, FormData, UserPreferences } from "../types/job-types";
 import { UserPreferencesService } from "../services/user-preferences-service";
+import { useSession } from "next-auth/react";
 
 export function OnboardingSteps() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -28,10 +29,11 @@ export function OnboardingSteps() {
   const [onboardingComplete, setOnboardingComplete] = useState(false);
   const [groqClient, setGroqClient] = useState<Groq | null>(null);
   const [hasMoreJobs, setHasMoreJobs] = useState(false);
-  const [userEmail, setUserEmail] = useState<string>("user@example.com"); // TODO: Get from authentication
   const [loadingExistingPreferences, setLoadingExistingPreferences] = useState(true);
   const [isAutoLoaded, setIsAutoLoaded] = useState(false); // Track if jobs were auto-loaded from preferences
 
+  const { data: session } = useSession();
+  const userEmail = session?.user?.email || "";
   const { matchJobs, processingBatch, batchProgress } = useJobMatching();
 
   // COMMENTED OUT: Groq client initialization - using keyword matching only
@@ -57,38 +59,61 @@ export function OnboardingSteps() {
 
   // Check for existing user preferences when component loads
   useEffect(() => {
-    const loadExistingPreferences = async () => {
-      try {
-        const existingPreferences = await UserPreferencesService.getPreferences(userEmail);
+    console.log("🔍 Preferences useEffect triggered:", { 
+      userEmail: !!userEmail, 
+      loadingExistingPreferences 
+    });
+
+    if (userEmail && loadingExistingPreferences) { // Fixed: should run when loading is true
+      const loadExistingPreferences = async () => {
+        console.log("📋 Loading existing preferences for user:", userEmail);
         
-        if (existingPreferences) {
-          console.log("Found existing preferences:", existingPreferences);
+        try {
+          const existingPreferences = await UserPreferencesService.getPreferences();
+          console.log("📋 Existing preferences result:", existingPreferences);
           
-          // Populate form data with existing preferences
-          setFormData({
-            jobFunction: existingPreferences.jobFunction,
-            jobType: existingPreferences.jobType,
-            location: existingPreferences.location,
-            openToRemote: existingPreferences.openToRemote,
-            workAuthorization: {
-              h1bSponsorship: existingPreferences.needsSponsorship,
-            },
-          });
-
-          // Auto-load jobs based on existing preferences
-          await autoLoadJobsFromPreferences(existingPreferences);
-        } else {
-          console.log("No existing preferences found, starting fresh onboarding");
+          if (existingPreferences) {
+            console.log("✅ Found existing preferences, auto-populating form");
+            
+            // Auto-populate form with existing preferences
+            setFormData({
+              jobFunction: existingPreferences.jobFunction || '',
+              jobType: existingPreferences.jobType || '',
+              location: existingPreferences.location || '',
+              openToRemote: existingPreferences.openToRemote || false,
+              workAuthorization: {
+                h1bSponsorship: existingPreferences.needsSponsorship || false,
+              },
+            });
+            
+            // Auto-load jobs if we have complete preferences
+            if (existingPreferences.jobFunction && existingPreferences.jobType) {
+              console.log("🚀 Complete preferences found, auto-loading jobs");
+              setIsAutoLoaded(true);
+              await autoLoadJobsFromPreferences(existingPreferences);
+            } else {
+              console.log("⚠️ Incomplete preferences, will start onboarding");
+              setCurrentStep(0); // Start from beginning if incomplete
+            }
+          } else {
+            console.log("ℹ️ No existing preferences found, starting fresh onboarding");
+            setCurrentStep(0); // Start from beginning if no preferences
+          }
+        } catch (error) {
+          console.error("❌ Failed to load existing preferences:", error);
+          setCurrentStep(0); // Start from beginning on error
+        } finally {
+          console.log("✅ Preferences loading complete, setting loadingExistingPreferences to false");
+          setLoadingExistingPreferences(false);
         }
-      } catch (error) {
-        console.error("Error loading existing preferences:", error);
-      } finally {
-        setLoadingExistingPreferences(false);
-      }
-    };
+      };
 
-    loadExistingPreferences();
-  }, [userEmail]);
+      loadExistingPreferences();
+    } else if (!userEmail) {
+      console.log("⚠️ No user email available, cannot load preferences");
+      setLoadingExistingPreferences(false);
+    }
+  }, [userEmail, loadingExistingPreferences]);
 
   // Auto-load jobs based on saved preferences
   const autoLoadJobsFromPreferences = async (preferences: any) => {
@@ -211,6 +236,29 @@ export function OnboardingSteps() {
     }
   };
 
+  const handlePreferencesSubmit = async () => {
+    setIsLoading(true);
+    try {
+      // Save user preferences
+      const preferences = convertToUserPreferences(formData);
+      try {
+        await UserPreferencesService.savePreferences(preferences);
+        console.log("User preferences saved successfully");
+      } catch (prefError) {
+        console.error("Failed to save user preferences:", prefError);
+        // Continue with job matching even if preferences save fails
+      }
+
+      // Continue with existing job matching logic...
+      await handleComplete();
+    } catch (error) {
+      console.error("Error in preferences submission:", error);
+      toast.error("Failed to process your preferences. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleComplete = async () => {
     console.log("Form data:", formData);
     setIsLoading(true);
@@ -219,10 +267,7 @@ export function OnboardingSteps() {
       // Save user preferences to database
       const preferences = convertToUserPreferences(formData);
       try {
-        await UserPreferencesService.savePreferences({
-          ...preferences,
-          userEmail
-        });
+        await UserPreferencesService.savePreferences(preferences);
         console.log("User preferences saved successfully");
       } catch (prefError) {
         console.warn("Failed to save preferences to database:", prefError);

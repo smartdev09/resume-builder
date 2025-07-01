@@ -15,7 +15,6 @@ export class JobInteractionsService {
   private static baseUrl = '/api/job-interactions';
 
   static async saveInteraction(params: {
-    userEmail: string;
     jobId: number;
     interactionType: JobInteractionType;
     notes?: string;
@@ -42,9 +41,9 @@ export class JobInteractionsService {
     }
   }
 
-  static async getInteractions(userEmail: string, type?: JobInteractionType) {
+  static async getInteractions(type?: JobInteractionType) {
     try {
-      const params = new URLSearchParams({ userEmail });
+      const params = new URLSearchParams();
       if (type) {
         params.append('type', type);
       }
@@ -53,7 +52,7 @@ export class JobInteractionsService {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch job interactions');
+        throw new Error(data.error || 'Failed to fetch interactions');
       }
 
       return data.interactions || [];
@@ -64,7 +63,6 @@ export class JobInteractionsService {
   }
 
   static async removeInteraction(params: {
-    userEmail: string;
     jobId: number;
     interactionType: JobInteractionType;
   }) {
@@ -91,56 +89,52 @@ export class JobInteractionsService {
   }
 
   // Helper methods for specific interaction types
-  static async likeJob(userEmail: string, jobId: number) {
+  static async likeJob(jobId: number) {
     return this.saveInteraction({
-      userEmail,
       jobId,
       interactionType: 'LIKED'
     });
   }
 
-  static async unlikeJob(userEmail: string, jobId: number) {
+  static async unlikeJob(jobId: number) {
     return this.removeInteraction({
-      userEmail,
       jobId,
       interactionType: 'LIKED'
     });
   }
 
-  static async markJobAsApplied(userEmail: string, jobId: number, notes?: string) {
+  static async markJobAsApplied(jobId: number, notes?: string) {
     return this.saveInteraction({
-      userEmail,
       jobId,
       interactionType: 'APPLIED',
       notes
     });
   }
 
-  static async saveJobExternal(userEmail: string, jobId: number, notes?: string) {
+  static async saveJobExternal(jobId: number, notes?: string) {
     return this.saveInteraction({
-      userEmail,
       jobId,
       interactionType: 'SAVED_EXTERNAL',
       notes
     });
   }
 
-  static async getLikedJobs(userEmail: string) {
-    return this.getInteractions(userEmail, 'LIKED');
+  static async getLikedJobs() {
+    return this.getInteractions('LIKED');
   }
 
-  static async getAppliedJobs(userEmail: string) {
-    return this.getInteractions(userEmail, 'APPLIED');
+  static async getAppliedJobs() {
+    return this.getInteractions('APPLIED');
   }
 
-  static async getSavedExternalJobs(userEmail: string) {
-    return this.getInteractions(userEmail, 'SAVED_EXTERNAL');
+  static async getSavedExternalJobs() {
+    return this.getInteractions('SAVED_EXTERNAL');
   }
 
   // Get interaction status for multiple jobs
-  static async getJobInteractionStatus(userEmail: string, jobIds: number[]) {
+  static async getJobInteractionStatus(jobIds: number[]) {
     try {
-      const interactions = await this.getInteractions(userEmail);
+      const interactions = await this.getInteractions();
       const statusMap: Record<number, JobInteractionType[]> = {};
 
       interactions.forEach((interaction: any) => {

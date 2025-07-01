@@ -12,6 +12,7 @@ import { JobNavigationTabs } from "./job-navigation-tabs";
 import { JobResultsList } from "./job-results-list";
 import { JobStatisticsHeader } from "./job-statistics-header";
 import OrionAssistant from "./orion-assistant";
+import { useSession } from "next-auth/react";
 
 interface JobListingPageProps {
   jobs: ScrapedJob[];
@@ -34,9 +35,11 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
   const [likedJobs, setLikedJobs] = useState<Set<number>>(new Set());
   const [appliedJobs, setAppliedJobs] = useState<Set<number>>(new Set());
   const [externalJobs, setExternalJobs] = useState<Set<number>>(new Set());
-  const [userEmail] = useState<string>("user@example.com");
   const [interactionsLoaded, setInteractionsLoaded] = useState(false);
   const [showPreferencesModal, setShowPreferencesModal] = useState(false);
+  
+  const { data: session } = useSession();
+  const userEmail = session?.user?.email || "";
   const [currentUserPreferences, setCurrentUserPreferences] = useState(userPreferences);
 
   const [showApplyConfirmation, setShowApplyConfirmation] = useState(false);
@@ -47,37 +50,41 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
   } | null>(null);
 
   useEffect(() => {
-    const loadInteractions = async () => {
-      if (jobs.length === 0 || interactionsLoaded) return;
-
-      try {
-        const jobIds = jobs.map(job => job.id);
-        const statusMap = await JobInteractionsService.getJobInteractionStatus(userEmail, jobIds);
-
-        const liked = new Set<number>();
-        const applied = new Set<number>();
-        const external = new Set<number>();
-
-        Object.entries(statusMap).forEach(([jobId, interactions]) => {
-          const id = parseInt(jobId);
-          if (interactions.includes('LIKED')) liked.add(id);
-          if (interactions.includes('APPLIED')) applied.add(id);
-          if (interactions.includes('SAVED_EXTERNAL')) external.add(id);
-        });
-
-        setLikedJobs(liked);
-        setAppliedJobs(applied);
-        setExternalJobs(external);
-        setInteractionsLoaded(true);
-      } catch (error) {
-        console.error('Failed to load job interactions:', error);
-        setInteractionsLoaded(true);
-      }
-    };
-
-    loadInteractions();
+    if (jobs.length > 0 && userEmail && !interactionsLoaded) {
+      loadInteractionStatuses();
+    }
   }, [jobs, userEmail, interactionsLoaded]);
-  
+
+  const loadInteractionStatuses = async () => {
+    if (jobs.length === 0) return;
+    
+    try {
+      const jobIds = jobs.map(job => job.id);
+      const statusMap = await JobInteractionsService.getJobInteractionStatus(jobIds);
+
+      const liked = new Set<number>();
+      const applied = new Set<number>();
+      const external = new Set<number>();
+
+      Object.entries(statusMap).forEach(([jobIdStr, interactions]) => {
+        const jobId = parseInt(jobIdStr);
+        interactions.forEach(type => {
+          if (type === 'LIKED') liked.add(jobId);
+          if (type === 'APPLIED') applied.add(jobId);
+          if (type === 'SAVED_EXTERNAL') external.add(jobId);
+        });
+      });
+
+      setLikedJobs(liked);
+      setAppliedJobs(applied);
+      setExternalJobs(external);
+      setInteractionsLoaded(true);
+    } catch (error) {
+      console.error('Failed to load interaction statuses:', error);
+      setInteractionsLoaded(true);
+    }
+  };
+
   const [filters, setFilters] = useState({
     workType: [] as string[], // Remote, Onsite, Hybrid
     jobLevel: [] as string[], // Entry Level, Mid Level, Senior Level
@@ -253,12 +260,13 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
   };
 
   const handleLikeJob = async (jobId: number) => {
+    if (!userEmail) return;
+    
     const job = jobs.find(j => j.id === jobId);
     const isLiked = likedJobs.has(jobId);
-    
     try {
       if (isLiked) {
-        await JobInteractionsService.unlikeJob(userEmail, jobId);
+        await JobInteractionsService.unlikeJob(jobId);
         setLikedJobs(prev => {
           const newSet = new Set(prev);
           newSet.delete(jobId);
@@ -266,7 +274,7 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
         });
         toast.success(`Removed ${job?.title || 'job'} from liked jobs`);
       } else {
-        await JobInteractionsService.likeJob(userEmail, jobId);
+        await JobInteractionsService.likeJob(jobId);
         setLikedJobs(prev => {
           const newSet = new Set(prev);
           newSet.add(jobId);
@@ -275,52 +283,40 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
         toast.success(`Added ${job?.title || 'job'} to liked jobs`);
       }
     } catch (error) {
-      console.error('Failed to update like status:', error);
-      toast.error("Failed to update like status");
+      toast.error("Failed to update job status");
     }
   };
 
   const handleApplyJob = async (jobId: number, jobUrl?: string) => {
+    if (!userEmail) return;
+    
     const job = jobs.find(j => j.id === jobId);
+    const userApplied = !appliedJobs.has(jobId);
     
-    setPendingJobApplication({ jobId, jobUrl, job });
-    setShowApplyConfirmation(true);
-    
+    // Open job URL if provided
     if (jobUrl) {
       window.open(jobUrl, '_blank');
     }
-  };
-
-  const handleApplyConfirmation = async (userApplied: boolean) => {
-    if (!pendingJobApplication) return;
-    
-    const { jobId, job } = pendingJobApplication;
     
     try {
       if (userApplied) {
-        await JobInteractionsService.markJobAsApplied(userEmail, jobId);
+        await JobInteractionsService.markJobAsApplied(jobId);
         setAppliedJobs(prev => new Set([...prev, jobId]));
         toast.success(`Marked ${job?.title || 'job'} as applied`);
-      } else {
-        toast.info("Application status not updated");
       }
     } catch (error) {
-      console.error('Failed to mark job as applied:', error);
-      toast.error("Failed to update application status");
-    } finally {
-      setShowApplyConfirmation(false);
-      setPendingJobApplication(null);
+      toast.error("Failed to mark job as applied");
     }
   };
 
-  const handleExternalJob = async (jobId: number) => {
+  const handleSaveExternal = async (jobId: number) => {
+    if (!userEmail) return;
+    
     const job = jobs.find(j => j.id === jobId);
     const isSaved = externalJobs.has(jobId);
-    
     try {
       if (isSaved) {
         await JobInteractionsService.removeInteraction({
-          userEmail,
           jobId,
           interactionType: 'SAVED_EXTERNAL'
         });
@@ -331,17 +327,16 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
         });
         toast.success(`Removed ${job?.title || 'job'} from saved jobs`);
       } else {
-        await JobInteractionsService.saveJobExternal(userEmail, jobId);
+        await JobInteractionsService.saveJobExternal(jobId);
         setExternalJobs(prev => {
           const newSet = new Set(prev);
           newSet.add(jobId);
           return newSet;
         });
-        toast.success(`Saved ${job?.title || 'job'} for later`);
+        toast.success(`Saved ${job?.title || 'job'} externally`);
       }
     } catch (error) {
-      console.error('Failed to update external save status:', error);
-      toast.error("Failed to update external save status");
+      toast.error("Failed to update job status");
     }
   };
 
@@ -394,7 +389,7 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
           onJobClick={handleJobClick}
           onLikeJob={handleLikeJob}
           onApplyJob={handleApplyJob}
-          onExternalJob={handleExternalJob}
+          onExternalJob={handleSaveExternal}
           isJobLiked={(jobId) => likedJobs.has(jobId)}
           isJobApplied={(jobId) => appliedJobs.has(jobId)}
           isJobExternal={(jobId) => externalJobs.has(jobId)}
@@ -414,19 +409,6 @@ export function JobrightListing({ jobs, onLoadMore, hasMoreJobs, isLoading, user
           onPreferencesUpdated={(newPreferences) => {
             setCurrentUserPreferences(newPreferences);
           }}
-        />
-      )}
-
-      {pendingJobApplication && (
-        <ApplyConfirmationModal
-          isOpen={showApplyConfirmation}
-          onClose={() => {
-            setShowApplyConfirmation(false);
-            setPendingJobApplication(null);
-          }}
-          onConfirm={handleApplyConfirmation}
-          jobTitle={pendingJobApplication.job?.title || "this job"}
-          company={pendingJobApplication.job?.company || "this company"}
         />
       )}
     </div>
