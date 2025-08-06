@@ -90,7 +90,7 @@ Analyze this job description and provide the skill extraction and matching analy
       maxTokens: 1500
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
 
   } catch (error) {
     console.error('Error in job analysis:', error);

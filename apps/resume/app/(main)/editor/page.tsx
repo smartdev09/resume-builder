@@ -6,6 +6,7 @@ import { resumeDataIncludes } from "utils/types";
 import { SidebarProvider, SidebarInset } from "@resume/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { mapToResumeValues } from "utils/utils";
+//import { toast } from "@resume/ui/sonner";
 
 interface PageProps {
     searchParams: Promise<{ resumeId?: string }>
@@ -21,8 +22,7 @@ export default async function Home({ searchParams } : PageProps) {
     const session = await auth();
 
 
-    // if(!session?.user) toast('Please login') 
-
+  //   if(!session?.user) toast('Please login') 
     const resumeToEdit = resumeId ? 
         await prisma.resume.findUnique({
             where: { id: resumeId, userid: session?.user.id},

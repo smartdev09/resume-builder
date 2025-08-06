@@ -23,12 +23,14 @@ import { Button } from "@resume/ui/button";
 import Link from "next/link";
 import ATSAnalyzerTab from "./ats-analyzer/ATSAnalyzerTab";
 import AIGeneratorTab from './ai-generator/AIGeneratorTab';
+import { toast } from "@resume/ui/sonner";
 
 interface NewResumeEditorProps {
   resumeToEdit: ResumeServerData | null;
 }
 
 export default function NewResumeEditor({ resumeToEdit }: NewResumeEditorProps) {
+
   const storedResume = useAppSelector(selectResume);
   const dispatch = useAppDispatch();
   
@@ -78,8 +80,10 @@ export default function NewResumeEditor({ resumeToEdit }: NewResumeEditorProps) 
       storedResume.workExperiences.some(exp => exp.company) ||
       storedResume.educations.some(edu => edu.school) ||
       storedResume.projects.some(proj => proj.project)
+   
     );
-    
+  //  useEffect(()=>{toast('Resume Generated Successfully')},[]
+//) 
     if (hasReduxData && !resumeToEdit) {
       const timeoutId = setTimeout(() => {
         dispatch(setResume(initialResumeState));
