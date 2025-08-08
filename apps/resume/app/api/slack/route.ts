@@ -4,8 +4,10 @@ interface SlackMessageFormat  {
     message: string;
     email: string;
 }
-
-export  async function POST(req:NextRequest, res:NextResponse) {
+//@ts-ignore
+export  async function POST(req:NextRequest, 
+//  res:NextResponse
+) {
 
 const url = 'https://slack.com/api/chat.postMessage?channel=resume-builder&text=daasd&pretty=1';
 

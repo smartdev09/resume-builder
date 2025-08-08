@@ -22,7 +22,7 @@ const fieldSchema = {
 // GET /api/admin/fields/[id] - Get single field
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: any//{ params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -49,7 +49,7 @@ export async function GET(
 // PUT /api/admin/fields/[id] - Update field
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: any//{ params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -124,7 +124,7 @@ export async function PUT(
 // DELETE /api/admin/fields/[id] - Delete field
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }:any// { params: { id: string } }
 ) {
   try {
     const session = await auth();

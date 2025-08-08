@@ -15,7 +15,7 @@ const subcategorySchema = {
 // GET /api/admin/subcategories/[id] - Get single subcategory
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: any//{ params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -51,7 +51,7 @@ export async function GET(
 // PUT /api/admin/subcategories/[id] - Update subcategory
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: any//{ params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -143,7 +143,7 @@ export async function PUT(
 // DELETE /api/admin/subcategories/[id] - Delete subcategory
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }:any// { params: { id: string } }
 ) {
   try {
     const session = await auth();
