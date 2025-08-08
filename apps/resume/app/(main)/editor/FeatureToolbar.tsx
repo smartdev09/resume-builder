@@ -30,16 +30,16 @@ const toolsByFeature: Record<string, ToolButton[]> = {
       icon: <Palette className="w-4 h-4" />,
       label: 'Style'
     },
-    // {
-    //   id: 'ai-generator',
-    //   icon: <Bot className="w-4 h-4" />,
-    //   label: 'AI Generator'
-    // },
-    // {
-    //   id: 'ats-analyzer',
-    //   icon: <BarChart3 className="w-4 h-4" />,
-    //   label: 'ATS Analyzer'
-    // },
+    {
+      id: 'ai-generator',
+      icon: <Bot className="w-4 h-4" />,
+      label: 'AI Generator'
+    },
+    {
+      id: 'ats-analyzer',
+      icon: <BarChart3 className="w-4 h-4" />,
+      label: 'ATS Analyzer'
+    },
     {
       id: 'templates',
       icon: <Layout className="w-4 h-4" />,

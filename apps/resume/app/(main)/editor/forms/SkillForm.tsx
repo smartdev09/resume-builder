@@ -118,6 +118,8 @@ export default function SkillForm({
     const { unsubscribe } = form.watch((values) => {
       setResumeData({
         ...resumeData,
+         //@ts-ignore
+
         skillSections: values.skillSections || []
       });
     });

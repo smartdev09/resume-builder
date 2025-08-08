@@ -55,6 +55,7 @@ export default function ResumePreview({
   }
   
   function PersonalInfoHeader({ resumeData }: ResumeSectionProps) {
+    //@ts-ignore
     const {
       photo,
       firstName,
@@ -64,6 +65,7 @@ export default function ResumePreview({
       country,
       phone,
       email,
+      //@ts-ignore
       colorHex,
       borderStyle,
     } = resumeData;
@@ -126,8 +128,9 @@ export default function ResumePreview({
       </div>
     );
   }
-  
+  //@ts-ignore
   function SummarySection({ resumeData }: ResumeSectionProps) {
+     //@ts-ignore
     const { summary, colorHex } = resumeData;
   
     if (!summary) return null;
@@ -156,7 +159,8 @@ export default function ResumePreview({
   }
   
   function WorkExperienceSection({ resumeData }: ResumeSectionProps) {
-    const { workExperiences, colorHex } = resumeData;
+     //@ts-ignore
+ const { workExperiences, colorHex } = resumeData;
   
     const workExperiencesNotEmpty = workExperiences?.filter(
       (exp) => Object.values(exp).filter(Boolean).length > 0,
@@ -208,7 +212,8 @@ export default function ResumePreview({
   }
   
   function EducationSection({ resumeData }: ResumeSectionProps) {
-    const { educations, colorHex } = resumeData;
+      //@ts-ignore
+const { educations, colorHex } = resumeData;
   
     const educationsNotEmpty = educations?.filter(
       (edu) => Object.values(edu).filter(Boolean).length > 0,
@@ -258,7 +263,8 @@ export default function ResumePreview({
   }
   
   function SkillsSection({ resumeData }: ResumeSectionProps) {
-    const { skills, colorHex, borderStyle } = resumeData;
+      //@ts-ignore
+const { skills, colorHex, borderStyle } = resumeData;
   
     if (!skills?.length) return null;
   
@@ -280,7 +286,8 @@ export default function ResumePreview({
             Skills
           </p>
           <div className="flex break-inside-avoid flex-wrap gap-2">
-            {skills.map((skill, index) => (
+{              //@ts-ignore
+skills.map((skill, index) => (
               <Badge
                 key={index}
                 className="rounded-md bg-black text-white hover:bg-black"

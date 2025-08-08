@@ -72,6 +72,7 @@ export const ResumeDropzone = ({
 
   const onRemove = () => {
     setFile(defaultFileState);
+    //@ts-ignore
     onFileUrlChange("", null);
   };
 

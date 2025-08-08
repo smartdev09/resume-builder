@@ -3,14 +3,14 @@ import { SessionProvider } from "next-auth/react";
 import { Rubik } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Providers } from "./providers";
-
-// import "./globals.css";
-import "@resume/ui/globals.css"
+import "@resume/ui/globals.css";
 import { Toaster } from "@resume/ui/toaster";
 import Navbar from "./components/Navbar";
 import { headers } from "next/headers";
 
-const rubik = Rubik();
+const rubik = Rubik({
+  subsets: ["latin"], // ✅ fix applied here
+});
 
 export const metadata: Metadata = {
   title: {
@@ -28,27 +28,24 @@ export default async function RootLayout({
   const headersList = await headers();
   const pathname = headersList.get("x-pathname") || "";
   
-  // Hide navbar on editor routes since we have custom header
   const showNavbar = !pathname.includes('/editor') && !pathname.includes('/admin');
 
   return (
     <html lang="en" suppressHydrationWarning>
       <SessionProvider>
         <Providers>
-          <body
-            className={`${rubik.className}`}
-          >
-          <ThemeProvider 
-            attribute="class" 
-            defaultTheme="system" 
-            enableSystem 
-            disableTransitionOnChange
-          >
-            <Toaster />
-            {showNavbar && <Navbar />}
-            {children}
-          </ThemeProvider>
-        </body>
+          <body className={rubik.className}>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="system"
+              enableSystem
+              disableTransitionOnChange
+            >
+              <Toaster />
+              {showNavbar && <Navbar />}
+              {children}
+            </ThemeProvider>
+          </body>
         </Providers>
       </SessionProvider>
     </html>
