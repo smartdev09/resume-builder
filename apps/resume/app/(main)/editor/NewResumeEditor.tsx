@@ -23,15 +23,18 @@ import { Button } from "@resume/ui/button";
 import Link from "next/link";
 import ATSAnalyzerTab from "./ats-analyzer/ATSAnalyzerTab";
 import AIGeneratorTab from './ai-generator/AIGeneratorTab';
+//import { toast } from "@resume/ui/sonner";
+import toast from 'react-hot-toast';
 
 interface NewResumeEditorProps {
   resumeToEdit: ResumeServerData | null;
 }
 
 export default function NewResumeEditor({ resumeToEdit }: NewResumeEditorProps) {
+
   const storedResume = useAppSelector(selectResume);
   const dispatch = useAppDispatch();
-  
+  const notify = () => toast('Resume Generated Successfully');
   const [activeFeature] = useState('resume-editor');
   const [activeTool, setActiveTool] = useState('edit');
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set(['general-info']));
@@ -69,7 +72,8 @@ export default function NewResumeEditor({ resumeToEdit }: NewResumeEditorProps) 
 
   const { isSaving, hasUnsavedData } = useAutoSaveReume(resumeData);
   useUnloadWarning(hasUnsavedData);
-
+ 
+ 
   // Clear Redux state logic (same as before)
   useEffect(() => {
     const hasReduxData = storedResume && (
@@ -78,8 +82,9 @@ export default function NewResumeEditor({ resumeToEdit }: NewResumeEditorProps) 
       storedResume.workExperiences.some(exp => exp.company) ||
       storedResume.educations.some(edu => edu.school) ||
       storedResume.projects.some(proj => proj.project)
+   
     );
-    
+ 
     if (hasReduxData && !resumeToEdit) {
       const timeoutId = setTimeout(() => {
         dispatch(setResume(initialResumeState));
