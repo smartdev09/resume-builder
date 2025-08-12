@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { Button } from "@resume/ui/button";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
 import ShimmerButton from "@resume/ui/shimmer-button";
 import { ArrowBigRight, ArrowRight, Linkedin, Mail, Star } from 'lucide-react';
 import Link from "next/link";
@@ -22,7 +23,8 @@ import { Label } from "@resume/ui/label";
 import { Separator } from "@resume/ui/separator";
 import { useToast } from "@resume/ui/hooks/use-toast";
 import WallOfLove from "./WallOfLove";
-
+import{supabase} from '../../../../packages/database/supabaseClient'
+import { useRouter } from "next/router";
 interface LandingPageProps {
   initialReviews: any[];
 }
@@ -32,6 +34,14 @@ export default function LandingPage({ initialReviews }: LandingPageProps) {
     message: '',
     email: ''
   });
+//   const router=useRouter()
+// useEffect(() => {
+//   supabase.auth.getSession().then(({ data }) => {
+//     if (data.session) {
+//       router.replace('/'); // replaces history, no token in URL
+//     }
+//   });
+// }, []);
 
   const { toast } = useToast();
   const { data } = useSession();

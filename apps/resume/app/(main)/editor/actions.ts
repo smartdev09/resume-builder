@@ -1,169 +1,102 @@
-"use server"
+import { supabase } from '../../../../../packages/database/supabaseClient';
+import { v4 as uuidv4 } from 'uuid';
 
-import { auth } from "utils/auth";
-import { prisma } from "@resume/db";
-import { resumeSchema, ResumeValues } from "utils/validations";
-import { del, put } from "@vercel/blob";
-import path from "path";
+export async function saveResume(values:any) {
+  // 1️⃣ Authenticate user
+  const { data: { session }, error: authError } = await supabase.auth.getSession();
+  if (authError || !session?.user) {
+    throw new Error("Please login with GitHub to continue");
+  }
 
-export async function saveResume(values: ResumeValues) {
-    const { id } = values;
+  const userId = session.user.id;
 
-    console.log('values', values)
-    
-    const { photo, workExperiences, educations, projects, languages, certifications, skillSections, ...resumeValues } = resumeSchema.parse(values);
+  // 2️⃣ Destructure and prepare main resume data
+  const {
+    id,
+    photo,
+    workExperiences,
+    educations,
+    projects,
+    languages,
+    certifications,
+    skillSections,
+    ...resumeValues
+  } = values;
 
-    console.log('RV', resumeValues)
+  // 3️⃣ Handle photo upload (placeholder — implement your storage logic)
+  let newPhotoUrl = null;
+  if (photo instanceof File) {
+    // Example: const { data: upload } = await supabase.storage.from('photos').upload(...)
+    // newPhotoUrl = upload.publicUrl
+  }
+const now = new Date().toISOString();
 
-    const session = await auth();
+  // 4️⃣ Insert or update main resume record
+  const { data: resume, error: resumeError } = await supabase
+    .from('resumes') // ✅ Correct table name
+    .upsert({
+      ...resumeValues,
+      selectedTemplate: 'simple',
+      userid: userId,
+      photoUrl: newPhotoUrl,
+        updatedAt: now, // ✅ ensure it's always set
+    ...(id ? {} : { createdAt: now }), // ✅ only set createdAt on insert
+    ...(id && { id }) // for updates
+    })
+    .select()
+    .single();
 
-    console.log('session', session)
+  if (resumeError) throw resumeError;
 
-    if(!session?.user) {
-        throw new Error("Please login to continue")
+  const resumeId = resume.id;
+
+  // 5️⃣ Helper to bulk insert related records
+  async function insertRelated(table: string, records: any[], dateMap?: { start?: string; end?: string }) {
+    if (!records?.length) return;
+  try{
+   const{data,error}= await supabase.from(table).insert(
+      records.map((r) => ({
+        ...r,
+        ...(dateMap?.start && { [dateMap.start]: r.startDate || null }),
+        ...(dateMap?.end && { [dateMap.end]: r.endDate || null }),
+        resumeId: resumeId
+      }))
+    );
+  if(error)
+  console.error(error)}
+    catch(e){
+      console.error('insertRelated: ',e)
     }
-    
-    const existingResume = id ? await prisma.resume.findUnique({ where: { id, userid: session?.user?.id }}) : null
+  }
+try{
+    console.log('work_experiences', workExperiences)
+    console.log('educations', educations)
+    console.log('projects', projects)
+console.log('skill_sections', skillSections)
+    // 6️⃣ Insert related entities
+ await insertRelated('work_experiences', workExperiences.map((workExperience:any)=>({ ...workExperience, id: uuidv4() })));
 
-    let newPhotoUrl: string | undefined | null = undefined;
+await insertRelated('educations', educations.map((education:any)=>({ ...education,id:uuidv4() })));
 
-    if(photo instanceof File) {
-        if(existingResume?.photoUrl) {
-            await del(existingResume.photoUrl);
-        }
+await Promise.all(
+  projects.map(async (project: any) => {
+    await insertRelated('projects', [{ ...project, id: uuidv4() }]);
+  })
+);
 
-        const blob = await put(`resume_photos/${path.extname(photo.name)}`, photo, {
-            access: 'public'
-        })
+await insertRelated('language', languages);
 
-        newPhotoUrl = blob.url;
-    } else if(photo === null) {
-        if(existingResume?.photoUrl) {
-            await del(existingResume?.photoUrl)
-        }
+await insertRelated('certification', certifications);
 
-        newPhotoUrl = null;
-    }
+await Promise.all(
+  skillSections.map(async (skill_section: any) => {
+    await insertRelated('skill_sections', [{ ...skill_section, id: uuidv4() }]);
+  })
+);
 
-    if(id) {
-        return prisma.resume.update({
-            where: { id },
-            data: {
-                ...resumeValues,
-                photoUrl: newPhotoUrl,
-                
-                workExperience: {
-                    deleteMany: {},
-                    create: workExperiences?.map((exp) => ({
-                        ...exp,
-                        startDate: exp.startDate ? new Date(exp.startDate  + "T00:00:00.000Z") : undefined,
-                        endDate: exp.endDate ? new Date(exp.endDate  + "T00:00:00.000Z") : undefined,
-                    }))
-                },
-                education: {
-                    deleteMany: {},
-                    create: educations?.map((edu) => ({
-                        degree: edu.degree,
-                        school: edu.school,
-                        startDate: edu.startDate ? new Date(edu.startDate  + "T00:00:00.000Z") : undefined,
-                        endDate: edu.endDate ? new Date(edu.endDate  + "T00:00:00.000Z" ) : undefined,
-                    }))
-                },
-                projects: {
-                    // deleteMany: {},
-                    create: projects?.map((project) => ({
-                        ...project,
-                        startDate: project.startDate ? new Date(project.startDate  + "T00:00:00.000Z") : undefined,
-                        endDate: project.endDate ? new Date(project.endDate  + "T00:00:00.000Z") : undefined,
-                        description: project.description
-                    }))
-                },
-                certificates: {
-                    deleteMany: {},
-                    create: certifications?.map((certificate) => ({
-                        ...certificate,
-                        completionDate: certificate.completionDate ? new Date(certificate.completionDate  + "T00:00:00.000Z") : undefined,
-                        source: certificate.source,
-                        link: certificate.link
-                    }))
-                },
-                languages: {
-                    deleteMany: {},
-                    create: languages?.map((language) => ({
-                        ...language,
-                        name: language.name,
-                        proficiency: language.proficiency
-                    }))
-                },
-                skillSections: {
-                    deleteMany: {},
-                    create: skillSections?.map((section) => ({
-                        name: section.name,
-                        skills: section.skills,
-                        order: section.order
-                    }))
-                },
-                updatedAt: new Date()
-            }
-        })
-    } else {
-        console.log('USERR IDDD', session.user.id)
-        return prisma.resume.create({
-            data: {
-              ...resumeValues,
-              selectedTemplate: 'simple',
-              userid: session.user.id!,
-              photoUrl: newPhotoUrl,
-              workExperience: {
-                create: workExperiences?.map((exp) => ({
-                  ...exp,
-                  startDate: exp.startDate ? new Date(exp.startDate  + "T00:00:00.000Z") : undefined,
-                  endDate: exp.endDate ? new Date(exp.endDate  + "T00:00:00.000Z") : undefined,
-                })),
-              },
-              education: {
-                create: educations?.map((edu) => ({
-                  degree: edu.degree,
-                  school: edu.school,
-                  startDate: edu.startDate ? new Date(edu.startDate  + "T00:00:00.000Z") : undefined,
-                  endDate: edu.endDate ? new Date(edu.endDate  + "T00:00:00.000Z") : undefined,
-                })),
-              },
-              projects: {
-                // deleteMany: {},
-                create: projects?.map((project) => ({
-                    ...project,
-                    startDate: project.startDate ? new Date(project.startDate  + "T00:00:00.000Z") : undefined,
-                    endDate: project.endDate ? new Date(project.endDate  + "T00:00:00.000Z") : undefined,
-                    description: project.description
-                 }))
-            },
-            certificates: {
-                // deleteMany: {},
-                create: certifications?.map((certificate) => ({
-                    ...certificate,
-                    completionDate: certificate.completionDate ? new Date(certificate.completionDate  + "T00:00:00.000Z") : undefined,
-                    source: certificate.source,
-                    link: certificate.link
-                }))
-            },
-            languages: {
-                // deleteMany: {},
-                create: languages?.map((language) => ({
-                    ...language,
-                    name: language.name,
-                    proficiency: language.proficiency
-                }))
-            },
-            skillSections: {
-                create: skillSections?.map((section) => ({
-                    name: section.name,
-                    skills: section.skills,
-                    order: section.order
-                }))
-            },
-            },
-          });
-    }
-
+}
+catch(e){
+  console.error('here now:',e)
+}
+return resume;
 }

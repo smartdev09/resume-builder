@@ -286,7 +286,10 @@ export default function NewResumeEditor({ resumeToEdit }: NewResumeEditorProps) 
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          <div className={cn("flex items-center gap-2 text-sm text-muted-foreground opacity-0 transition-opacity", isSaving && 'opacity-100')}>
+          <div className={cn("flex items-center gap-2 text-sm text-muted-foreground opacity-0 transition-opacity",
+            isSaving
+             && 
+            'opacity-100')}>
             <Save className="w-4 h-4" />
             <span>Saving...</span>
           </div>
