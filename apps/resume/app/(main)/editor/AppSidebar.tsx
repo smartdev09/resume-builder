@@ -5,25 +5,24 @@ import {
   SidebarContent,
   SidebarFooter,
 } from "@resume/ui/sidebar";
-import { useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useSession } from "next-auth/react";
-import Tabs from "./Tabs";
-import { steps } from "./steps";
 import UserButton from "../../components/UserButton";
 import ThemeToggle from "@resume/ui/ThemeToggle";
-import { User } from "lucide-react";
+import { User, FileText, Briefcase } from "lucide-react";
 import { Button } from "@resume/ui/button";
 
 export function AppSidebar() {
-  const searchParams = useSearchParams();
-  const currentStep = searchParams.get("step") || steps[0]!.key;
+  const router = useRouter();
   const { data: session } = useSession();
   
-  function setCurrentStep(key: string) {
-    const newSearchParams = new URLSearchParams(searchParams);
-    newSearchParams.set("step", key);
-    window.history.pushState(null, "", `?${newSearchParams.toString()}`);
-  }
+  const handleEditorNavigation = () => {
+    router.push('/editor');
+  };
+
+  const handleJobPlatformNavigation = () => {
+    router.push('http://localhost:3001');
+  };
 
   return (
     <Sidebar
@@ -36,10 +35,29 @@ export function AppSidebar() {
       } as React.CSSProperties}
     >
       <SidebarContent className="bg-gray-100 dark:bg-[#242627] dark:border-[hsl(0,0,17)] h-full p-1">
-        <Tabs 
-          currentStep={currentStep}
-          setCurrentStep={setCurrentStep}
-        />
+        <div className="flex flex-col items-center gap-2 pt-2">
+          {/* Editor Icon */}
+          <Button 
+            size="icon" 
+            variant="ghost"
+            onClick={handleEditorNavigation}
+            className="w-10 h-10"
+            title="Resume Editor"
+          >
+            <FileText className="w-5 h-5" />
+          </Button>
+          
+          {/* Job Platform Icon */}
+          <Button 
+            size="icon" 
+            variant="ghost"
+            onClick={handleJobPlatformNavigation}
+            className="w-10 h-10"
+            title="Job Platform"
+          >
+            <Briefcase className="w-5 h-5" />
+          </Button>
+        </div>
       </SidebarContent>
       
       {/* Footer with user controls */}

@@ -184,7 +184,7 @@ export function JobPreferencesStep({
       <div className="mt-8 flex justify-end">
         <Button
           onClick={validateForm}
-          className="rounded-full bg-primary text-primary-foreground px-8 hover:bg-primary/90"
+          className="rounded-full px-8"
         >
           Next
         </Button>

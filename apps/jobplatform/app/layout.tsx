@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { ThemeProvider } from "next-themes";
+import { SessionProvider } from "next-auth/react";
 
 import "@resume/ui/globals.css"
 import { Toaster } from "@resume/ui/sonner";
@@ -26,15 +27,17 @@ export default function RootLayout({
       <body
         className={`${inter.className} antialiased`}
       >
-      <ThemeProvider 
-        attribute="class" 
-        defaultTheme="system" 
-        enableSystem 
-        disableTransitionOnChange
-      >
-        <Toaster />
-        <OnboardingLayout>{children}</OnboardingLayout>
-      </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider 
+            attribute="class" 
+            defaultTheme="system" 
+            enableSystem 
+            disableTransitionOnChange
+          >
+            <Toaster />
+            <OnboardingLayout>{children}</OnboardingLayout>
+          </ThemeProvider>
+        </SessionProvider>
       </body>
     </html>
   );

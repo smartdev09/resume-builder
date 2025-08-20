@@ -60,38 +60,87 @@ export class KeywordMatchingService {
       }
     }
 
-    // Job Type Matching (5% weight - 5 points max)
+    // Job Type Matching (10 points max)
     if (job.job_type && userPreferences.jobType) {
       const jobType = job.job_type.toLowerCase();
       const userJobType = userPreferences.jobType.toLowerCase();
       
       if (jobType.includes(userJobType) || userJobType.includes(jobType)) {
-        score += 5;
+        score += 10;
         reasons.push("Job type match");
+      } else {
+        // Partial compatibility check
+        if ((userJobType === "full-time" && (jobType.includes("permanent") || jobType.includes("full"))) ||
+            (userJobType === "contract" && (jobType.includes("contractor") || jobType.includes("freelance"))) ||
+            (userJobType === "part-time" && jobType.includes("part"))) {
+          score += 6;
+          reasons.push("Compatible job type");
+        }
       }
     }
 
-    // Location/Remote Matching (10% weight - 10 points max)
+    // Location/Remote Matching (25 points max - increased importance)
     if (userPreferences.openToRemote && job.is_remote) {
-      score += 10;
+      score += 25;
       reasons.push("Remote work available");
     } else if (job.location && userPreferences.location) {
       const jobLocation = job.location.toLowerCase();
       const userLocation = userPreferences.location.toLowerCase();
       
+      // Exact location match
       if (jobLocation.includes(userLocation) || userLocation.includes(jobLocation)) {
-        score += 8;
+        score += 25;
         reasons.push("Location match");
       } else {
         // Check for state/country matches
         const locationTerms = userLocation.split(/[\s,]+/);
+        let partialMatch = false;
         locationTerms.forEach(term => {
           if (term.length > 2 && jobLocation.includes(term)) {
-            score += 3;
+            score += 15;
             reasons.push("Partial location match");
+            partialMatch = true;
           }
         });
+        
+        // If no location match and user doesn't want remote, penalize heavily
+        if (!partialMatch && !userPreferences.openToRemote) {
+          score -= 20; // Significant penalty for location mismatch
+        }
+        
+        // If remote is available but user prefers specific location
+        if (job.is_remote && !partialMatch) {
+          score += 15;
+          reasons.push("Remote option available");
+        }
       }
+    } else if (!job.location && !job.is_remote) {
+      // No location info and not remote - penalize
+      score -= 10;
+    }
+
+    // Sponsorship Alignment (5 points max)
+    if (userPreferences.needsSponsorship) {
+      // Check if job description mentions sponsorship
+      if (job.description && 
+          (job.description.toLowerCase().includes("sponsorship") || 
+           job.description.toLowerCase().includes("h1b") ||
+           job.description.toLowerCase().includes("visa"))) {
+        score += 5;
+        reasons.push("Sponsorship available");
+      } else {
+        // Assume large companies more likely to sponsor
+        const largeCompanyIndicators = ["google", "microsoft", "amazon", "apple", "facebook", "meta", "netflix"];
+        if (job.company && largeCompanyIndicators.some(company => 
+          job.company.toLowerCase().includes(company))) {
+          score += 3;
+          reasons.push("Large company (likely sponsors)");
+        } else {
+          score += 2; // Neutral assumption
+        }
+      }
+    } else {
+      score += 5; // No sponsorship needed - full points
     }
 
     // Overall Relevance Bonus (5% weight - 5 points max)
@@ -112,8 +161,8 @@ export class KeywordMatchingService {
       }
     }
 
-    // Only include jobs with score >= 50 for quality control
-    if (score >= 50) {
+    // Only include jobs with score >= 60 for quality control (matches AI threshold)
+    if (score >= 60) {
       return {
         job,
         score: Math.min(100, score), // Cap at 100

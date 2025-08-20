@@ -35,6 +35,9 @@ export interface ScrapedJob {
   company_reviews_count?: number;
   vacancy_count?: number;
   work_from_home_type?: string;
+  // Match score and reason from AI matching
+  matchScore?: number;
+  matchReason?: string;
 }
 
 export interface JobMatch {
