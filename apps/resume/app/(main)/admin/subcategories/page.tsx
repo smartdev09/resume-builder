@@ -1,5 +1,5 @@
 "use client";
-
+import {v4 as uuidv4} from "uuid"
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@resume/ui/card";
 import { FileText, Plus, Edit, Trash2, Filter } from "lucide-react";
@@ -36,11 +36,11 @@ interface Subcategory {
 
 const categoryTypeLabels: { [key: string]: string } = {
   JOB_FUNCTION: "Job Functions",
-  JOB_TYPE: "Job Types", 
+  JOB_TYPE: "Job Types",
   LOCATION: "Locations",
-  WORK_AUTHORIZATION: "Work Authorization"
+  WORK_AUTHORIZATION: "Work Authorization",
 };
-
+import { supabase } from "node_modules/@resume/db/supabaseClient";
 export default function SubcategoriesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
@@ -50,34 +50,32 @@ export default function SubcategoriesPage() {
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState<string>("all");
 
-  // Fetch categories and subcategories from API
+  // Fetch categories and subcategories with Supabase
   const fetchData = async () => {
     try {
-      const [categoriesResponse, subcategoriesResponse] = await Promise.all([
-        fetch('/api/admin/categories'),
-        fetch('/api/admin/subcategories')
-      ]);
+      const [{ data: categoriesData, error: categoriesError }, { data: subcategoriesData, error: subcategoriesError }] =
+        await Promise.all([
+          supabase.from("categories").select("*").order("order", { ascending: true }),
+          supabase
+            .from("subcategories")
+            .select("*, category:categories(id, name, type)")
+            .order("order", { ascending: true }),
+        ]);
 
-      if (!categoriesResponse.ok || !subcategoriesResponse.ok) {
-        throw new Error('Failed to fetch data');
+      if (categoriesError || subcategoriesError) {
+        throw categoriesError || subcategoriesError;
       }
 
-      const [categoriesData, subcategoriesData] = await Promise.all([
-        categoriesResponse.json(),
-        subcategoriesResponse.json()
-      ]);
-
-      setCategories(categoriesData.categories || []);
-      setSubcategories(subcategoriesData.subcategories || []);
+      setCategories(categoriesData || []);
+      setSubcategories(subcategoriesData || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Failed to load data');
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
   };
 
-  // Load data on mount
   useEffect(() => {
     fetchData();
   }, []);
@@ -93,27 +91,24 @@ export default function SubcategoriesPage() {
   };
 
   const handleDeleteSubcategory = async (subcategoryId: string) => {
-    if (!confirm('Are you sure you want to delete this subcategory?')) {
+    if (!confirm("Are you sure you want to delete this subcategory?")) {
       return;
     }
 
     setDeleteLoading(subcategoryId);
     try {
-      const response = await fetch(`/api/admin/subcategories/${subcategoryId}`, {
-        method: 'DELETE',
-      });
+      const { error } = await supabase
+        .from("subcategories")
+        .delete()
+        .eq("id", subcategoryId);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete subcategory');
-      }
+      if (error) throw error;
 
-      // Remove the subcategory from the list
-      setSubcategories(prev => prev.filter(sub => sub.id !== subcategoryId));
-      toast.success('Subcategory deleted successfully');
+      setSubcategories((prev) => prev.filter((sub) => sub.id !== subcategoryId));
+      toast.success("Subcategory deleted successfully");
     } catch (error: any) {
-      console.error('Error deleting subcategory:', error);
-      toast.error(error.message || 'Failed to delete subcategory');
+      console.error("Error deleting subcategory:", error);
+      toast.error(error.message || "Failed to delete subcategory");
     } finally {
       setDeleteLoading(null);
     }
@@ -127,48 +122,66 @@ export default function SubcategoriesPage() {
     roles: string[];
   }) => {
     try {
-      const url = editingSubcategory 
-        ? `/api/admin/subcategories/${editingSubcategory.id}`
-        : '/api/admin/subcategories';
-      const method = editingSubcategory ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(subcategoryData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to ${editingSubcategory ? 'update' : 'create'} subcategory`);
-      }
-
-      const data = await response.json();
-      
       if (editingSubcategory) {
-        // Update the subcategory in the list
-        setSubcategories(prev => prev.map(sub => 
-          sub.id === editingSubcategory.id ? data.subcategory : sub
-        ));
-        toast.success('Subcategory updated successfully!');
+        // UPDATE
+        const { data, error } = await supabase
+          .from("subcategories")
+          .update({
+            name: subcategoryData.name,
+            description: subcategoryData.description || null,
+            categoryId: subcategoryData.categoryId,
+            isActive: subcategoryData.isActive,
+            roles: subcategoryData.roles,
+          })
+          .eq("id", editingSubcategory.id)
+          .select("*, category:categories(id, name, type)")
+          .single();
+
+        if (error) throw error;
+
+        setSubcategories((prev) =>
+          prev.map((sub) =>
+            sub.id === editingSubcategory.id ? (data as Subcategory) : sub
+          )
+        );
+        toast.success("Subcategory updated successfully!");
       } else {
-        // Add the new subcategory to the list
-        setSubcategories(prev => [...prev, data.subcategory]);
-        toast.success('Subcategory created successfully!');
+        // CREATE
+        const { data, error } = await supabase
+          .from("subcategories")
+          .insert([
+            {id:uuidv4(),
+              name: subcategoryData.name,
+              description: subcategoryData.description || null,
+              categoryId: subcategoryData.categoryId,
+              isActive: subcategoryData.isActive,
+              roles: subcategoryData.roles,
+            },
+          ])
+          .select("*, category:categories(id, name, type)")
+          .single();
+
+        if (error) throw error;
+
+        setSubcategories((prev) => [...prev, data as Subcategory]);
+        toast.success("Subcategory created successfully!");
       }
     } catch (error: any) {
-      console.error('Error saving subcategory:', error);
-      toast.error(error.message || `Failed to ${editingSubcategory ? 'update' : 'create'} subcategory`);
-      throw error; // Re-throw to let the dialog handle it
+      console.error("Error saving subcategory:", error);
+      toast.error(
+        error.message ||
+          `Failed to ${editingSubcategory ? "update" : "create"} subcategory`
+      );
+      throw error;
     }
   };
 
-  // Filter subcategories based on selected category
-  const filteredSubcategories = filterCategoryId === "all" 
-    ? subcategories 
-    : subcategories.filter(sub => sub.categoryId === filterCategoryId);
+  // Filter subcategories
+  const filteredSubcategories =
+    filterCategoryId === "all"
+      ? subcategories
+      : subcategories.filter((sub) => sub.categoryId === filterCategoryId);
+
 
   if (loading) {
     return (

@@ -3,9 +3,17 @@ import { supabase } from "node_modules/@resume/db/supabaseClient";
 
 export async function GET() {
   try {
-  
+    console.log('reached apis/reviews.........................................................................')
+    const { data, error } = await supabase
+      .from("reviews")
+      .select("*")
+     // .order("createdAt", { ascending: false });
+console.log('(reviews/route.ts:)',data, error)
 
-    return NextResponse.json([]);
+    if (error) throw error;
+console.log(`(api/resume):${data}`)
+
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching reviews:", error);
     return NextResponse.json(
