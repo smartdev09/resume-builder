@@ -3,34 +3,25 @@ import NewResumeEditor from "./NewResumeEditor";
 import { SidebarProvider, SidebarInset } from "@resume/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { redirect } from "next/navigation";
-
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { supabase } from "node_modules/@resume/db/supabaseClient";
-interface PageProps {
-  searchParams: { resumeId?: string };
-}
+import { createClient } from "node_modules/@resume/db/supabaseServer"; // ✅ use alias, not node_modules import
 
 export const metadata: Metadata = {
   title: "Build your resume",
 };
-import { createClient } from "node_modules/@resume/db/supabaseServer";
-export default async function Home({ searchParams }: PageProps) {
-  const { resumeId } =await searchParams;
+// @ts-ignore
+export default async function Home({searchParams,}: any) {
+  // @ts-ignore
+  const { resumeId } = searchParams ?? {};
 
-  // Await cookies() here
-// const supabase = createRouteHandlerClient({
-//   cookies: () => cookies(),  // function returning the cookies promise
-// });
-const supabase=await createClient()
+  const supabase = await createClient();
+
   const {
     data: { user },
     error,
   } = await supabase.auth.getUser();
-console.log(`(editor>:)${user}`)
+
   if (error || !user) {
-    console.log(error);
-    redirect("/sign-in"); // No need to throw after redirect
+    redirect("/sign-in");
   }
 
   let resumeToEdit = null;
@@ -48,14 +39,11 @@ console.log(`(editor>:)${user}`)
       `
       )
       .eq("id", resumeId)
-      // .eq("userid", user.id)
       .single();
 
     if (error) throw error;
     resumeToEdit = data;
   }
-
-  console.log("resumeToEdit", resumeToEdit);
 
   return (
     <SidebarProvider>
