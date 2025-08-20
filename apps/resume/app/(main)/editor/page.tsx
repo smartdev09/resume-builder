@@ -1,40 +1,68 @@
 import { Metadata } from "next";
 import NewResumeEditor from "./NewResumeEditor";
-import { prisma } from "@resume/db";
-import { auth } from "utils/auth";
-import { resumeDataIncludes } from "utils/types";
 import { SidebarProvider, SidebarInset } from "@resume/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { mapToResumeValues } from "utils/utils";
+import { redirect } from "next/navigation";
 
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
+import { supabase } from "node_modules/@resume/db/supabaseClient";
 interface PageProps {
-    searchParams: Promise<{ resumeId?: string }>
+  searchParams: { resumeId?: string };
 }
 
 export const metadata: Metadata = {
-    title: 'Build your resume'
-}
+  title: "Build your resume",
+};
+import { createClient } from "node_modules/@resume/db/supabaseServer";
+export default async function Home({ searchParams }: PageProps) {
+  const { resumeId } =await searchParams;
 
-export default async function Home({ searchParams } : PageProps) {
-    const { resumeId } = await searchParams;
+  // Await cookies() here
+// const supabase = createRouteHandlerClient({
+//   cookies: () => cookies(),  // function returning the cookies promise
+// });
+const supabase=await createClient()
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
+console.log(`(editor>:)${user}`)
+  if (error || !user) {
+    console.log(error);
+    redirect("/sign-in"); // No need to throw after redirect
+  }
 
-    const session = await auth();
+  let resumeToEdit = null;
 
+  if (resumeId) {
+    const { data, error } = await supabase
+      .from("resumes")
+      .select(
+        `
+        *,
+        work_experiences(*),
+        educations(*),
+        projects(*),
+        skill_sections(*)
+      `
+      )
+      .eq("id", resumeId)
+      // .eq("userid", user.id)
+      .single();
 
-    // if(!session?.user) toast('Please login') 
+    if (error) throw error;
+    resumeToEdit = data;
+  }
 
-    const resumeToEdit = resumeId ? 
-        await prisma.resume.findUnique({
-            where: { id: resumeId, userid: session?.user.id},
-            include: resumeDataIncludes
-        }) : null
-        console.log('resumeToEdit', resumeToEdit)
-    return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <NewResumeEditor resumeToEdit={resumeToEdit}/>
-            </SidebarInset>
-        </SidebarProvider>
-    )
+  console.log("resumeToEdit", resumeToEdit);
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <NewResumeEditor resumeToEdit={resumeToEdit} />
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }

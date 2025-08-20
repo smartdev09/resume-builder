@@ -1,29 +1,104 @@
 import { formatDistanceToNow } from "date-fns";
 import { User, UserPlus } from "lucide-react";
+import { createClient } from "node_modules/@resume/db/supabaseServer";
+//import { supabase } from "node_modules/@resume/db/supabaseClient";
+import { supabase } from "node_modules/@resume/db/supabaseClient";
 
 async function fetchRecentActivity() {
-  try {
+    try {
     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/admin/analytics`, {
       cache: 'no-store', // Ensure fresh data
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch analytics');
+    })
+    try{
+//const supabase=await createClient()
+const {data:{user},error:authError}=await supabase.auth.getUser()
+    // 1. Total users
+    const { count: totalUsers, error: userError } = await supabase
+      .from("auth.users")
+      .select("id", { count: "exact", head: true });
+
+    if (userError) throw userError;
+
+    // 2. Total resumes
+    const { count: totalResumes, error: resumeError } = await supabase
+      .from("resumes")
+      .select("id", { count: "exact", head: true });
+
+    if (resumeError) throw resumeError;
+
+    // 3. Recent users (last 30 days)
+     const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+  // Query auth.users table (system schema)
+  const { count, error } = await supabase
+    .from("auth.users") // system table
+    .select("id", { count: "exact", head: true })
+   //.gte("created_at", last30Days);
+
+  if (error) {
+    console.error("Error fetching recent users:", error.message);
+    return null;
+  }
+let recentUsers=count
+console.log(`user count for analytics`,recentUsers)
+
+   // if (recentError) throw recentError;
+
+    // 4. Active users (last 7 days updated)
+    const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const { count: activeUsers, error: activeError } = await supabase
+      .from("users")
+      .select("id", { count: "exact", head: true })
+      .gte("updatedAt", last7Days);
+
+    if (activeError) throw activeError;
+
+    // 5. Recent activity (latest 5 users)
+    const { data: recentActivity, error: activityError } = await supabase
+      .from("users")
+      .select("id, name, email, createdAt")
+      .order("createdAt", { ascending: false })
+      .limit(5);
+console.log('recentActivity:',recentActivity)
+    if (activityError) throw activityError;
+
+    const stats = {
+      totalUsers,
+      totalResumes,
+      recentUsers,
+      activeUsers,
+      recentActivity: recentActivity?.map((user) => ({
+        id: `user-${user.id}`,
+        type: "user_joined",
+        title: `${user.name || user.email} joined`,
+        description: "New user registration",
+        timestamp: user.createdAt,
+      })) ?? [],
+    };
+    console.log('stats in recent activity:',recentActivity)
+    return stats
+
     }
+   catch(e){
+    console.log('error fetching recent activity')
+   }
     
-    const data = await response.json();
-    return data.recentActivity || [];
+    //const data = await response.json();
+    //data.recentActivity 
+    return  [];
   } catch (error) {
     console.error('Error fetching recent activity:', error);
     return [];
   }
 }
 
-export async function RecentActivity() {
+ export async function RecentActivity() {
   try {
-    const activities = await fetchRecentActivity();
-
-    if (activities.length === 0) {
+    //@ts-ignore
+    const {recentActivity:activities} = await fetchRecentActivity();
+console.log('received activites:',activities)
+    //@ts-ignore
+    if (activities?.length === 0) {
       return (
         <div className="text-center py-6">
           <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
@@ -32,9 +107,10 @@ export async function RecentActivity() {
       );
     }
 
-    return (
+     return (
       <div className="space-y-4">
-        {activities.map((activity: any) => (
+       {/* @ts-ignore */}
+        {activities?.map((activity: any) => (
           <div key={activity.id} className="flex items-center space-x-3">
             <div className="flex-shrink-0">
               <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center">
@@ -61,5 +137,5 @@ export async function RecentActivity() {
         <p className="text-sm text-muted-foreground">Unable to load recent activity</p>
       </div>
     );
-  }
+   }
 } 

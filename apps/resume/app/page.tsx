@@ -1,25 +1,30 @@
 import LandingPage from "./components/LandingPage";
-import { headers } from "next/headers";
+import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from "next/headers";
 
 export default async function Page() {
+  const supabase =  createServerComponentClient({ cookies });
+
   // Fetch initial reviews using environment variables
   const domain = process.env.VERCEL_URL || "localhost:3000";
   const protocol = process.env.NODE_ENV === "development" ? "http" : "https";
 
-  let initialReviews = [];
   
   try {
-    const reviewsResponse = await fetch(`${protocol}://${domain}/api/reviews`, {
-      cache: 'no-store'
-    });
+    const { data, error } = await supabase
+          .from("reviews")
+          .select("*")
     
-    if (reviewsResponse.ok) {
-      initialReviews = await reviewsResponse.json();
-    }
+    console.log('sadasdas',data)
+    if(data)
+    return <LandingPage 
+  initialReviews={data} 
+  />;
+   
   } catch (error) {
     console.error('Failed to fetch reviews:', error);
     // initialReviews remains empty array
   }
 
-  return <LandingPage initialReviews={initialReviews} />;
+  
 }

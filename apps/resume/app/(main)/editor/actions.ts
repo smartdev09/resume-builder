@@ -1,14 +1,16 @@
 import { supabase } from '../../../../../packages/database/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
+//import {createClient} from '../../../../../packages/database/supabaseServer'
 
 export async function saveResume(values:any) {
   // 1️⃣ Authenticate user
-  const { data: { session }, error: authError } = await supabase.auth.getSession();
-  if (authError || !session?.user) {
+  //const supabase= await createClient()
+  const { data, error: authError } = await supabase.auth.getUser();
+  if (authError || !data) {
     throw new Error("Please login with GitHub to continue");
   }
 
-  const userId = session.user.id;
+  const userId = data.user.id;
 
   // 2️⃣ Destructure and prepare main resume data
   const {
@@ -74,20 +76,21 @@ try{
     console.log('projects', projects)
 console.log('skill_sections', skillSections)
     // 6️⃣ Insert related entities
+    if(workExperiences)
  await insertRelated('work_experiences', workExperiences.map((workExperience:any)=>({ ...workExperience, id: uuidv4() })));
-
+if(educations)
 await insertRelated('educations', educations.map((education:any)=>({ ...education,id:uuidv4() })));
-
+if(projects)
 await Promise.all(
   projects.map(async (project: any) => {
     await insertRelated('projects', [{ ...project, id: uuidv4() }]);
   })
 );
-
+if(languages)
 await insertRelated('language', languages);
-
+if(certifications)
 await insertRelated('certification', certifications);
-
+if(skillSections)
 await Promise.all(
   skillSections.map(async (skill_section: any) => {
     await insertRelated('skill_sections', [{ ...skill_section, id: uuidv4() }]);

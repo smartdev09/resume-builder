@@ -6,7 +6,7 @@ import { Metadata } from "next";
 import Link from "next/link";
 import ResumeItem from "./ResumeItem";
 import { auth } from "utils/auth";
-
+import {createClient} from '../../../../../packages/database/supabaseServer'
 export const metadata: Metadata = {
   keywords: [
     'Resume builder',
@@ -16,30 +16,52 @@ export const metadata: Metadata = {
   ],
   title: 'Resume builder',
 }
+import { redirect } from "next/navigation";
 
 export default async function Home() {
+ const supabase = await createClient();
 
-  const session = await auth();
+  // ✅ Check auth with getUser()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  const [resumes, totalCount] = await Promise.all([
-    prisma.resume.findMany({
-      where: {
-        userid: session?.user?.id,
-      },
-      orderBy: {
-        updatedAt: 'desc'
-      },
-      include: resumeDataIncludes
-    }),
-    prisma.resume.count({
-      where: {
-        userid: session?.user?.id
-      }
-    })
-  ])
+  if (userError) {
+    console.error("Error fetching user:", userError.message);
+    redirect("/api/auth/signin");
+  }
 
-  console.log('resumes', resumes)
-  
+  if (!user) {
+    redirect("/api/auth/signin");
+  }
+
+  // ✅ Fetch resumes from Supabase instead of Prisma
+  const { data: resumes, error: resumesError } = await supabase
+  //@ts-ignore  
+  .from("resumes")
+    .select(`
+      *,
+      resume_data (*)
+    `) // Adjust join according to your schema
+    .eq("userid", user.id)
+    .order("updatedAt", { ascending: false });
+
+  if (resumesError) {
+    console.error("Error fetching resumes:", resumesError.message);
+  }
+
+  const { count: totalCount, error: countError } = await supabase
+    .from("resumes")
+    .select("*", { count: "exact", head: true })
+    .eq("userid", user.id);
+
+  if (countError) {
+    console.error("Error fetching resume count:", countError.message);
+  }
+
+  console.log("resumes", resumes);
+
   return (
     <main className="max-w-7xl mx-auto w-full px-3 py-6 space-y-6">
       <div className="flex justify-end">

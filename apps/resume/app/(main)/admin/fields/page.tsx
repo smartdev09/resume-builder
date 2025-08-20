@@ -6,6 +6,8 @@ import { FileText, Plus, Edit, Trash2 } from "lucide-react";
 import { Button } from "@resume/ui/button";
 import { AddFieldDialog } from "../../../components/admin/add-field-dialog";
 import { toast } from "@resume/ui/sonner";
+import { supabase } from "node_modules/@resume/db/supabaseClient";
+import { v4 as uuidv4 } from 'uuid';
 
 interface Field {
   id: string;
@@ -38,12 +40,24 @@ export default function FieldsPage() {
   // Fetch fields from API
   const fetchFields = async () => {
     try {
-      const response = await fetch('/api/admin/fields');
-      if (!response.ok) {
-        throw new Error('Failed to fetch fields');
-      }
-      const data = await response.json();
-      setFields(data.fields || []);
+
+
+      const {data,error}=await supabase
+  .from('onboarding_fields')
+  .select('*')
+  .order('step', { ascending: true })
+  .order('order', { ascending: true });
+      // const response = await fetch('/api/admin/fields');
+      // if (!response.ok) {
+      //   throw new Error('Failed to fetch fields');
+      // }
+      // const data = await response.json();
+if(error){
+console.error('error fetching fields')}
+//@ts-ignore
+console.log('fields received from database:',data.fields)
+//@ts-ignore
+      setFields(data || []);
     } catch (error) {
       console.error('Error fetching fields:', error);
       toast.error('Failed to load fields');
@@ -107,33 +121,96 @@ export default function FieldsPage() {
         ? `/api/admin/fields/${editingField.id}`
         : '/api/admin/fields';
       const method = editingField ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(fieldData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to ${editingField ? 'update' : 'create'} field`);
-      }
-
-      const data = await response.json();
       
-      if (editingField) {
-        // Update the field in the list
-        setFields(prev => prev.map(field => 
-          field.id === editingField.id ? data.field : field
-        ));
-        toast.success('Field updated successfully!');
-      } else {
-        // Add the new field to the list
-        setFields(prev => [...prev, data.field]);
-        toast.success('Field created successfully!');
+      if(!editingField){
+        // 3. Check if field name already exists
+const { data: existingField, error: existingError } = await supabase
+  .from("onboarding_fields")
+  .select("name")
+  .eq("name", fieldData.name)
+  .maybeSingle();
+
+if (existingError) {
+  toast('FIELD NAME ALREADY EXISTS')
+  return;
+  //console.error(existingError);
+ // return NextResponse.json({ error: "Database error" }, { status: 500 });
+}
+
+if (existingField) {
+  //return NextResponse.json(
+  //   { error: "Field name already exists" },
+  //   { status: 400 }
+  // );
+  toast('FIELD NAME ALREADY EXISTS')
+}
+
+// 4. Get max order for the given step
+const { data: maxOrderRow, error: maxOrderError } = await supabase
+  .from("onboarding_fields")
+  .select("order")
+  .eq("step", fieldData.step)
+  .order("order", { ascending: false })
+  .limit(1)
+  .maybeSingle();
+
+if (maxOrderError) {
+  console.error(maxOrderError);
+ // return NextResponse.json({ error: "Database error" }, { status: 500 });
+}
+
+const nextOrder = (maxOrderRow?.order || 0) + 1;
+
+// 5. Insert new field
+const { data: newField, error: insertError } = await supabase
+  .from("onboarding_fields")
+  .insert([
+    {id:uuidv4(),
+      step: fieldData.step,
+      fieldType: fieldData.fieldType,
+      name: fieldData.name,
+      label: fieldData.label,
+      placeholder: fieldData.placeholder || null,
+      required: fieldData.required,
+      order: nextOrder,
+     // options: fieldData.options||false,
+     // isActive: fieldData.isActive,
+    },
+  ])
+  .select()
+  .single();
+
+if (insertError) {
+  console.error(insertError);
+//  return NextResponse.json({ error: "Failed to create field" }, { status: 500 });
+}
       }
+      // const response = await fetch(url, {
+      //   method,
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(fieldData),
+      // });
+
+      // if (!response.ok) {
+      //   const errorData = await response.json();
+      //   throw new Error(errorData.error || `Failed to ${editingField ? 'update' : 'create'} field`);
+      // }
+
+      // const data = await response.json();
+      
+      // if (editingField) {
+      //   // Update the field in the list
+      //   setFields(prev => prev.map(field => 
+      //     field.id === editingField.id ? data.field : field
+      //   ));
+      //   toast.success('Field updated successfully!');
+      // } else {
+      //   // Add the new field to the list
+      //   setFields(prev => [...prev, data.field]);
+      //   toast.success('Field created successfully!');
+      // }
     } catch (error: any) {
       console.error('Error saving field:', error);
       toast.error(error.message || `Failed to ${editingField ? 'update' : 'create'} field`);

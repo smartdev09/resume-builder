@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Button } from "@resume/ui/button";
 import { useSession } from "next-auth/react";
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ShimmerButton from "@resume/ui/shimmer-button";
 import { ArrowBigRight, ArrowRight, Linkedin, Mail, Star } from 'lucide-react';
 import Link from "next/link";
@@ -24,31 +25,57 @@ import { Separator } from "@resume/ui/separator";
 import { useToast } from "@resume/ui/hooks/use-toast";
 import WallOfLove from "./WallOfLove";
 import{supabase} from '../../../../packages/database/supabaseClient'
-import { useRouter } from "next/router";
+//import { useRouter } from "next/router";
 interface LandingPageProps {
   initialReviews: any[];
 }
 
 export default function LandingPage({ initialReviews }: LandingPageProps) {
+
+
   const [messageBody, setMessageBody] = useState({
     message: '',
     email: ''
   });
-//   const router=useRouter()
-// useEffect(() => {
-//   supabase.auth.getSession().then(({ data }) => {
-//     if (data.session) {
-//       router.replace('/'); // replaces history, no token in URL
-//     }
-//   });
-// }, []);
-
+  const [user, setUser] = useState(null);
+  const router = useRouter();
   const { toast } = useToast();
-  const { data } = useSession();
+//@ts-ignore
+useEffect(() => {
+  const getUserDetails = async () => {
+    const {
+      data: { user },
+      error
+    } = await supabase.auth.getUser();
 
-  const buildResumeUrl = data?.user ? `${process.env.DOMAIN}/editor` : `${process.env.DOMAIN}/api/auth/signin`;
-  const uploadResumeUrl = data?.user ? `${process.env.DOMAIN}/upload` : `${process.env.DOMAIN}/api/auth/signin`;
+    if (error) {
+      console.error("Error getting user:", error);
+      toast({
+        title: "Error fetching user",
+        description: error.message
+      });
+      return;
+    }
 
+    console.log(user);
+
+    if (user) {
+      // @ts-ignore
+      setUser(user);
+      // Optional: redirect if already logged in
+      // router.replace('/');
+    } else {
+      setUser(null);
+    }
+  };
+
+  getUserDetails();
+}, [toast, router]);
+
+ 
+
+const buildResumeUrl = user ? `${process.env.DOMAIN}/editor` : `${process.env.DOMAIN}/sign-in`;
+  const uploadResumeUrl = user ? `${process.env.DOMAIN}/upload` : `${process.env.DOMAIN}/sign-in`;
   return (
     <main className="relative px-2 lg:px-8 min-h-screen overflow-hidden text-white">
       <div className="relative z-10 py-8 md:py-12">

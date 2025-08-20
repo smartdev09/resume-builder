@@ -1,77 +1,61 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import {supabase} from '../../../../packages/database/supabaseClient'
-//import { getProviders, signIn } from 'next-auth/react';
-//import {signIn} from '../sign-in/auth.tsx'
-//type ProvidersType = Awaited<ReturnType<typeof getProviders>>
+import React, { useState } from "react";
+import { login, signup } from "./actions"; 
+// ⬆ Replace with your actual server action imports
 
-export default function SignUp() {
-   // const [providers, setProviders] = useState<ProvidersType | null>(null);
+export default function AuthForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
+  const handleLogin = async () => {
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
 
-  // async function initProviders() {
-  //   const p = await getProviders();
-  //   setProviders(p);
-  // }
+    await login(formData);
+  };
 
-  // useEffect(() => {
-  //   initProviders();
-  // }, []);
-async function signIn() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'github',
-  })
-}
+  const handleSignup = async () => {
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
+
+    await signup(formData);
+  };
 
   return (
-    <div className="min-h-screen bg-purple-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
-            <span className="text-white text-2xl font-bold">S</span>
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold text-center mb-2">Welcome Back!</h1>
-        <p className="text-gray-500 text-center mb-8">
-          Glad to see you again!
-        </p>
-        {/* {providers && Object.values(providers).map((provider) => ( */}
-        <div key='github'
-        //{provider.name}
-        >
-            <button type="button" onClick={() => signIn()
-              //provider.id))
-              }>
-            Sign in with
-            {/* {provider.name} */}
-            </button>
-        </div>
-        {/* ))} */}
-        <p className="text-center text-sm text-gray-500 mt-4">
-          By signing in, I agree to the
-          <Link
-            href="/privacy-policy"
-            className="text-purple-500 hover:underline"
-          >
-            Privacy Policy
-          </Link>
-          and
-          <Link href="/terms" className="text-purple-500 hover:underline">
-            Terms and Conditions
-          </Link>
-        </p>
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?
-          <Link
-            href="/sign-up"
-            className="text-purple-500 font-semibold hover:underline"
-          >
-            Sign up
-          </Link>
-        </p>
+    <div className="flex flex-col gap-3 max-w-sm mx-auto p-4 border rounded">
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Email"
+        className="border p-2 rounded"
+      />
 
+      <input
+        type="password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        placeholder="Password"
+        className="border p-2 rounded"
+      />
+
+      <div className="flex gap-2">
+        <button
+          onClick={handleLogin}
+          className="bg-blue-500 text-white px-4 py-2 rounded"
+        >
+          Login
+        </button>
+
+        <button
+          onClick={handleSignup}
+          className="bg-green-500 text-white px-4 py-2 rounded"
+        >
+          Sign Up
+        </button>
       </div>
     </div>
   );

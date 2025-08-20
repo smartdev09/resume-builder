@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@resume/ui/card";
 import { Users, UserPlus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@resume/ui/sonner";
-
+import { supabase } from "node_modules/@resume/db/supabaseClient";
 interface User {
   id: string;
   name: string | null;
@@ -23,12 +23,37 @@ export default function UsersPage() {
   // Fetch users from API
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users');
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-      const data = await response.json();
-      setUsers(data.users || []);
+
+    // const { searchParams } = new URL(request.url);
+    // const page = parseInt(searchParams.get("page") || "1");
+    // const limit = parseInt(searchParams.get("limit") || "10");
+    // const search = searchParams.get("search") || "";
+
+    // const from = (page - 1) * limit;
+    // const to = from + limit - 1;
+
+    let query = supabase
+      .from("users")
+      .select("id, name, email, image, role, createdAt, updatedAt", { count: "exact" })
+      .order("createdAt", { ascending: false })
+     // .range(from, to);
+
+    // if (search) {
+    //   query = query.or(
+    //     `name.ilike.%${search}%,email.ilike.%${search}%`
+    //   );
+    // }
+
+    const { data: users, error, count } = await query;
+
+    if (error) throw error;
+
+      // if (!response.ok) {
+      //   console.log('response;',response)
+      //   throw new Error('Failed to fetch users');
+      // }
+      // const data = await response.json();
+      setUsers(users || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');

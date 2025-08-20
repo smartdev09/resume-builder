@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { SessionProvider } from "next-auth/react";
+// import { SessionProvider } from "next-auth/react";
 import { Rubik } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Providers } from "./providers";
@@ -32,7 +32,7 @@ export default async function RootLayout({
 
   return (
     <html lang="en" suppressHydrationWarning>
-      <SessionProvider>
+      {/* <SessionProvider> */}
         <Providers>
           <body className={rubik.className}>
             <ThemeProvider
@@ -47,7 +47,7 @@ export default async function RootLayout({
             </ThemeProvider>
           </body>
         </Providers>
-      </SessionProvider>
+      {/* </SessionProvider> */}
     </html>
   );
 }
