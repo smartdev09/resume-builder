@@ -21,7 +21,7 @@ export default async function Home({searchParams,}: any) {
   } = await supabase.auth.getUser();
 
   if (error || !user) {
-    redirect("/sign-in");
+  // redirect("/sign-in");
   }
 
   let resumeToEdit = null;

@@ -32,7 +32,6 @@ interface LandingPageProps {
 
 export default function LandingPage({ initialReviews }: LandingPageProps) {
 
-
   const [messageBody, setMessageBody] = useState({
     message: '',
     email: ''
@@ -40,42 +39,53 @@ export default function LandingPage({ initialReviews }: LandingPageProps) {
   const [user, setUser] = useState(null);
   const router = useRouter();
   const { toast } = useToast();
+  useEffect(()=>{
+   console.log('(Landing Page:)',user) 
+  })
 //@ts-ignore
-useEffect(() => {
-  const getUserDetails = async () => {
-    const {
-      data: { user },
-      error
-    } = await supabase.auth.getUser();
+// useEffect(() => {
+//   const getUserDetails = async () => {
+//    // const supabase=await createClient()--wouldnt work, throws error on isntallation of next/header bacause package is server side use only
 
-    if (error) {
-      console.error("Error getting user:", error);
-      toast({
-        title: "Error fetching user",
-        description: error.message
-      });
-      return;
-    }
+//     const {
+//       data: { user},
+//       error
+//     } = await supabase.auth.getUser();
 
-    console.log(user);
+//     if (error) {
+//       console.error("Error getting user:", error);
+//       toast({
+//         title: "Error fetching user",
+//         description: error.message
+//       });
+//       return;
+//     }
 
-    if (user) {
-      // @ts-ignore
-      setUser(user);
-      // Optional: redirect if already logged in
-      // router.replace('/');
-    } else {
-      setUser(null);
-    }
-  };
+//     console.log(user);
 
-  getUserDetails();
-}, [toast, router]);
+//     if (user) {
+//        //@ts-ignore
+//        setUser(user);
+//       // Optional: redirect if already logged in
+//       // router.replace('/');
+//     } else {
+//       setUser(null);
+//     }
+//   };
+
+//   getUserDetails();
+// }, []);
 
  
 
-const buildResumeUrl = user ? `${process.env.DOMAIN}/editor` : `${process.env.DOMAIN}/sign-in`;
-  const uploadResumeUrl = user ? `${process.env.DOMAIN}/upload` : `${process.env.DOMAIN}/sign-in`;
+const buildResumeUrl = 
+//user ? 
+ `${process.env.DOMAIN}/editor` 
+ //: `${process.env.DOMAIN}/sign-in`;
+  const uploadResumeUrl = 
+  //user ? 
+  `${process.env.DOMAIN}/upload`  
+  //:`${process.env.DOMAIN}/sign-in`;
   return (
     <main className="relative px-2 lg:px-8 min-h-screen overflow-hidden text-white">
       <div className="relative z-10 py-8 md:py-12">

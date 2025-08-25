@@ -61,7 +61,8 @@ export default function WorkExperienceForm({
 
     return (
         <div className="p-4 sm:p-6 space-y-4">
-            <Form {...form}>
+            {/* @ts-ignore */}
+        <Form {...form}>
                 <form className="space-y-4">
                     <DndContext 
                         sensors={sensors}

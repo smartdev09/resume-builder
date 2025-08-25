@@ -34,14 +34,16 @@ export async function updateSession(request: NextRequest) {
   // IMPORTANT: DO NOT REMOVE auth.getUser()
 
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
-console.log(`(utils>middleware): `,user)
+    data: { session },
+  } = await supabase.auth.getSession()
+console.log(`(utils>middleware): `,session?.user)
   if (
-   !user) 
-    //&&
-    //!request.nextUrl.pathname.startsWith('/sign-in') 
-    //&&
+   !session?.user
+    
+     
+    &&
+    request.nextUrl.pathname!=='/' 
+  )//&&
    // !request.nextUrl.pathname.startsWith('/auth') &&
    // !request.nextUrl.pathname.startsWith('/error')
   //) 

@@ -7,7 +7,8 @@ import "@resume/ui/globals.css";
 import { Toaster } from "@resume/ui/toaster";
 import Navbar from "./components/Navbar";
 import { headers } from "next/headers";
-
+//import { SessionContextProvider } from "@supabase/auth-helpers-react";
+//import { supabase } from "node_modules/@resume/db/supabaseClient";
 const rubik = Rubik({
   subsets: ["latin"], // ✅ fix applied here
 });
@@ -33,6 +34,7 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       {/* <SessionProvider> */}
+     {/* // <SessionContextProvider supabaseClient={supabase}> */}
         <Providers>
           <body className={rubik.className}>
             <ThemeProvider
@@ -47,6 +49,7 @@ export default async function RootLayout({
             </ThemeProvider>
           </body>
         </Providers>
+        {/* </SessionContextProvider> */}
       {/* </SessionProvider> */}
     </html>
   );

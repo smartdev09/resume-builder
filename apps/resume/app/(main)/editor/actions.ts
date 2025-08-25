@@ -5,12 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 export async function saveResume(values:any) {
   // 1️⃣ Authenticate user
   //const supabase= await createClient()
-  const { data, error: authError } = await supabase.auth.getUser();
-  if (authError || !data) {
+  const { data, error: authError } = await supabase.auth.getSession();
+  if (authError || !data.session?.user) {
     throw new Error("Please login with GitHub to continue");
   }
 
-  const userId = data.user.id;
+  const userId = data?.session?.user.id;
 
   // 2️⃣ Destructure and prepare main resume data
   const {

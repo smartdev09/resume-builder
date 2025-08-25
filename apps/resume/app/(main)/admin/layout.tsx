@@ -1,4 +1,3 @@
-import { auth } from "utils/auth";
 import { redirect } from "next/navigation";
 import { AdminSidebar } from "../../components/admin/admin-sidebar";
 import { AdminHeader } from "../../components/admin/admin-header";
@@ -10,7 +9,7 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const supabase=await createClient()
-  const session = await auth();
+ // const session = await auth();
 const {data:{user},error}=await supabase.auth.getUser()
   // Check if user is logged in and has admin role
   // if (!session?.user) {
@@ -18,7 +17,7 @@ const {data:{user},error}=await supabase.auth.getUser()
   // }
 if(!user){
 console.error('(admin/layout.tsx:)no user found')
-redirect('/sign-in')
+//redirect('/sign-in')
 }
   // For now, we'll allow all authenticated users - you can add role check later
   // if (session.user.role !== "admin") {

@@ -2,7 +2,6 @@
 
 "use server"
 
-import { auth } from "utils/auth";
 import { resumeSchema, ResumeValues } from "utils/validations";
 import { del, put } from "@vercel/blob";
 import path from "path";

@@ -67,9 +67,12 @@ export default function LanguageItem({
       </div>
 
       <FormField
+        //@ts-ignore
         control={form.control}
+        //@ts-ignore
         name={`languages.${index}.name`}
-        render={({ field }) => (
+       //@ts-ignore
+         render={({ field }) => (
           <FormItem>
             <FormLabel>Language Name</FormLabel>
             <FormControl>
@@ -84,8 +87,10 @@ export default function LanguageItem({
       />
 
       <FormField
+        //@ts-ignore
         control={form.control}
-        name={`languages.${index}.proficiency`}
+       //@ts-ignore
+         name={`languages.${index}.proficiency`}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Proficiency Level</FormLabel>

@@ -1,9 +1,10 @@
 import LandingPage from "./components/LandingPage";
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from "next/headers";
-
+import { createClient } from "node_modules/@resume/db/supabaseServer";
 export default async function Page() {
-  const supabase =  createServerComponentClient({ cookies });
+  const supabase =await createClient()  
+  //createServerComponentClient({ cookies });
 
   // Fetch initial reviews using environment variables
   const domain = process.env.VERCEL_URL || "localhost:3000";

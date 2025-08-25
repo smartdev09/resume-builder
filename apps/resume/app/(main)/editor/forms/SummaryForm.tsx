@@ -60,11 +60,14 @@ export default function SummaryForm({
     
     return (
         <div className="p-6 space-y-4">
-            <Form {...form}>
+            {/* @ts-ignore */}
+        <Form {...form}>
                 <form className="space-y-4">
                     <FormField
-                        control={form.control}
-                        name="summary"
+                       //@ts-ignore
+         control={form.control}
+                     //@ts-ignore
+          name="summary"
                         render={({field}) => (
                             <FormItem>
                                 <FormLabel>

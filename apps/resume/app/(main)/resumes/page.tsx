@@ -5,7 +5,6 @@ import { PlusSquare } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import ResumeItem from "./ResumeItem";
-import { auth } from "utils/auth";
 import {createClient} from '../../../../../packages/database/supabaseServer'
 export const metadata: Metadata = {
   keywords: [

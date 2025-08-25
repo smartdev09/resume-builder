@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@resume/db";
-import { auth } from "utils/auth";
 
 const subcategorySchema = {
   validate: (data: any) => {
@@ -15,11 +14,9 @@ const subcategorySchema = {
 // GET /api/admin/subcategories - Get all subcategories
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
     
-    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    
 
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get("categoryId");
@@ -27,7 +24,6 @@ export async function GET(request: NextRequest) {
     const whereClause = categoryId ? { categoryId } : {};
 
     const subcategories = await prisma.subcategory.findMany({
-      where: whereClause,
       include: {
         category: {
           select: {
@@ -53,11 +49,9 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/subcategories - Create a new subcategory
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
     
-    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    
 
     const body = await request.json();
     
@@ -139,11 +133,9 @@ export async function POST(request: NextRequest) {
 // DELETE /api/admin/subcategories - Delete all subcategories (for testing)
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
     
-    if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    
 
     await prisma.subcategory.deleteMany({});
     return NextResponse.json({ message: "All subcategories deleted" });

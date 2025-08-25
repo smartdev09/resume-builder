@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "../../../../../packages/database/supabaseServer";
-import { auth } from "utils/auth"; // keep your existing auth
 
 // import { createClient } from "@supabase/supabase-js";
 
@@ -12,7 +11,7 @@ import { auth } from "utils/auth"; // keep your existing auth
 export async function GET(request: NextRequest) {
   try {
     console.log('hello from activties route')
-    const session = await auth();
+   // const session = await auth();
 
     // if (!session?.user) {
     //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

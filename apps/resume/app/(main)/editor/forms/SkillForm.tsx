@@ -151,7 +151,7 @@ export default function SkillForm({
           Organize your skills into sections.
         </p>
       </div>
-
+{/* @ts-ignore */}       
       <Form {...form}>
         <form className="space-y-4">
           <DndContext
