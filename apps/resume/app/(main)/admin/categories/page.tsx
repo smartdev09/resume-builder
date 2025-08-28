@@ -8,6 +8,14 @@ import { CategoryDialog } from "../../../components/admin/category-dialog";
 import { toast } from "@resume/ui/sonner";
 import { supabase } from "node_modules/@resume/db/supabaseClient";
 import {v4 as uuidv4} from "uuid"
+import {getCategoryCount,
+  getCategories, 
+  checkCategoryExists,
+  getMaxOrder,
+  checkConflicts,
+  insertCategory,
+updateCategory} from '@resume/db/categories'
+
 interface Category {
   id: string;
   name: string;
@@ -37,29 +45,10 @@ export default function CategoriesPage() {
   // Fetch categories from API
   const fetchCategories = async () => {
     try {
-      // const response = await fetch('/api/admin/categories');
-      // if (!response.ok) {
-      //   throw new Error('Failed to fetch categories');
-      // }
-      // const data = await response.json();
-      const { data: categories, error } = await supabase
-  .from("categories")
-  .select(`
-    *,
-    subcategories (
-      *,
-      order
-    )
-  `)
-  //.match(whereClause)
-  .order("type", { ascending: true })
-  .order("order", { ascending: true })
-  .order("order", { foreignTable: "subcategories", ascending: true });
-
-if (error) {
-  console.error(error);
-}
-
+     
+const categories=await getCategories()
+console.log(categories)
+//@ts-ignore
       setCategories(categories || []);
     } catch (error) {
       console.error('Error fetching categories:', error);
@@ -95,13 +84,13 @@ const handleDeleteCategory = async (categoryId: string) => {
   setDeleteLoading(categoryId);
   try {
     // Delete category (subcategories are deleted automatically via cascade)
-    const { error, count } = await supabase
-      .from("categories")
-      .delete({ count: "exact" }) // returns deleted row count
-      .eq("id", categoryId);
+    // const { error, count } = await supabase
+    //   .from("categories")
+    //   .delete({ count: "exact" }) // returns deleted row count
+    //   .eq("id", categoryId);
 
-    if (error) throw error;
-
+    // if (error) throw error;
+const count=getCategoryCount(categoryId)
     // Remove from state
     setCategories((prev) => prev.filter((cat) => cat.id !== categoryId));
 
@@ -135,49 +124,22 @@ const handleSaveCategory = async (categoryData: {
     // ---- CREATE (if not editing) ----
     if (!editingCategory) {
       // 1. Check if category already exists for this type
-      const { data: existingCategory, error: existingError } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("type", dataToSave.type)
-        .eq("name", dataToSave.name)
-        .maybeSingle();
-
-      if (existingError) throw existingError;
-      if (existingCategory) {
+      const exists=await checkCategoryExists(dataToSave.type,dataToSave.name)
+      
+      if (exists) {
         toast.error("Category name already exists for this type");
         return;
       }
 
       // 2. Get max order for this type
-      const { data: maxOrderRow, error: maxOrderError } = await supabase
-        .from("categories")
-        .select("order")
-        .eq("type", dataToSave.type)
-        .order("order", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-
-      if (maxOrderError) throw maxOrderError;
+    
+const maxOrderRow =await getMaxOrder(dataToSave.type)
 
       const nextOrder = (maxOrderRow?.order || 0) + 1;
 
       // 3. Insert new category
-      const { data: newCategory, error: insertError } = await supabase
-        .from("categories")
-        .insert([
-          {id:uuidv4(),
-            type: dataToSave.type,
-            name: dataToSave.name,
-            description: dataToSave.description || null,
-            isActive: dataToSave.isActive !== false,
-            order: nextOrder,
-          },
-        ])
-        .select("*, subcategories(*)")
-        .single();
-
-      if (insertError) throw insertError;
-
+      const newCategory= await insertCategory(uuidv4(),dataToSave,nextOrder)
+      
       setCategories((prev) => [...prev, newCategory]);
       toast.success("Category created successfully!");
       return;
@@ -186,47 +148,23 @@ const handleSaveCategory = async (categoryData: {
     // ---- UPDATE (if editing) ----
     else {
       // 1. Check if category exists
-      const { data: existingCategory, error: existingError } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("id", editingCategory.id)
-        .maybeSingle();
-
-      if (existingError) throw existingError;
-      if (!existingCategory) {
+      const exists= checkCategoryExists('',editingCategory.id)
+     
+      if (!exists) {
         toast.error("Category not found");
         return;
       }
 
       // 2. Check for conflicts (same type + name, excluding current id)
-      const { data: conflictingCategory, error: conflictError } = await supabase
-        .from("categories")
-        .select("*")
-        .eq("type", dataToSave.type)
-        .eq("name", dataToSave.name)
-        .neq("id", editingCategory.id)
-        .maybeSingle();
-
-      if (conflictError) throw conflictError;
-      if (conflictingCategory) {
+      
+     
+      if (await checkConflicts(dataToSave,editingCategory.id)) {
         toast.error("Category name already exists for this type");
         return;
       }
 
       // 3. Update category
-      const { data: updatedCategory, error: updateError } = await supabase
-        .from("categories")
-        .update({
-          type: dataToSave.type,
-          name: dataToSave.name,
-          description: dataToSave.description || null,
-          isActive: dataToSave.isActive !== false,
-        })
-        .eq("id", editingCategory.id)
-        .select("*, subcategories(*)")
-        .single();
-
-      if (updateError) throw updateError;
+      const updatedCategory=await updateCategory(dataToSave,editingCategory.id)
 
       setCategories((prev) =>
         prev.map((cat) =>

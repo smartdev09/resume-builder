@@ -5,7 +5,7 @@ import { PlusSquare } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import ResumeItem from "./ResumeItem";
-import {createClient} from '../../../../../packages/database/supabaseServer'
+import {createClient} from '@resume/db/supabaseServer'
 export const metadata: Metadata = {
   keywords: [
     'Resume builder',
@@ -16,6 +16,9 @@ export const metadata: Metadata = {
   title: 'Resume builder',
 }
 import { redirect } from "next/navigation";
+import {getCount,
+  getResumes
+} from '@resume/db/resume'
 
 export default async function Home() {
  const supabase = await createClient();
@@ -28,36 +31,22 @@ export default async function Home() {
 
   if (userError) {
     console.error("Error fetching user:", userError.message);
-    redirect("/api/auth/signin");
+    redirect("sign-in");
   }
 
   if (!user) {
-    redirect("/api/auth/signin");
+    redirect("sign-in");
   }
 
   // ✅ Fetch resumes from Supabase instead of Prisma
-  const { data: resumes, error: resumesError } = await supabase
-  //@ts-ignore  
-  .from("resumes")
-    .select(`
-      *,
-      resume_data (*)
-    `) // Adjust join according to your schema
-    .eq("userid", user.id)
-    .order("updatedAt", { ascending: false });
+  const {data:resumes,error:resumesError}=await getResumes(user.id)
 
   if (resumesError) {
     console.error("Error fetching resumes:", resumesError.message);
   }
+  //get total count of all resumes
+const totalCount=await getCount(user.id)
 
-  const { count: totalCount, error: countError } = await supabase
-    .from("resumes")
-    .select("*", { count: "exact", head: true })
-    .eq("userid", user.id);
-
-  if (countError) {
-    console.error("Error fetching resume count:", countError.message);
-  }
 
   console.log("resumes", resumes);
 

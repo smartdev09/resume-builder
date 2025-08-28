@@ -14,7 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@resume/ui/select";
-
+import { updateSubcategory, 
+  createSubcategory ,
+  deleteSubcategory,
+getCategoriesWithSubcategories} from "@resume/db/subcategories";
 interface Category {
   id: string;
   name: string;
@@ -53,18 +56,8 @@ export default function SubcategoriesPage() {
   // Fetch categories and subcategories with Supabase
   const fetchData = async () => {
     try {
-      const [{ data: categoriesData, error: categoriesError }, { data: subcategoriesData, error: subcategoriesError }] =
-        await Promise.all([
-          supabase.from("categories").select("*").order("order", { ascending: true }),
-          supabase
-            .from("subcategories")
-            .select("*, category:categories(id, name, type)")
-            .order("order", { ascending: true }),
-        ]);
-
-      if (categoriesError || subcategoriesError) {
-        throw categoriesError || subcategoriesError;
-      }
+      const {categoriesData,subcategoriesData}=await getCategoriesWithSubcategories()
+   
 
       setCategories(categoriesData || []);
       setSubcategories(subcategoriesData || []);
@@ -97,12 +90,8 @@ export default function SubcategoriesPage() {
 
     setDeleteLoading(subcategoryId);
     try {
-      const { error } = await supabase
-        .from("subcategories")
-        .delete()
-        .eq("id", subcategoryId);
+     const error=await deleteSubcategory(subcategoryId)
 
-      if (error) throw error;
 
       setSubcategories((prev) => prev.filter((sub) => sub.id !== subcategoryId));
       toast.success("Subcategory deleted successfully");
@@ -124,20 +113,9 @@ export default function SubcategoriesPage() {
     try {
       if (editingSubcategory) {
         // UPDATE
-        const { data, error } = await supabase
-          .from("subcategories")
-          .update({
-            name: subcategoryData.name,
-            description: subcategoryData.description || null,
-            categoryId: subcategoryData.categoryId,
-            isActive: subcategoryData.isActive,
-            roles: subcategoryData.roles,
-          })
-          .eq("id", editingSubcategory.id)
-          .select("*, category:categories(id, name, type)")
-          .single();
-
-        if (error) throw error;
+       const data= await updateSubcategory(
+        subcategoryData,editingSubcategory.id
+       )
 
         setSubcategories((prev) =>
           prev.map((sub) =>
@@ -147,21 +125,7 @@ export default function SubcategoriesPage() {
         toast.success("Subcategory updated successfully!");
       } else {
         // CREATE
-        const { data, error } = await supabase
-          .from("subcategories")
-          .insert([
-            {id:uuidv4(),
-              name: subcategoryData.name,
-              description: subcategoryData.description || null,
-              categoryId: subcategoryData.categoryId,
-              isActive: subcategoryData.isActive,
-              roles: subcategoryData.roles,
-            },
-          ])
-          .select("*, category:categories(id, name, type)")
-          .single();
-
-        if (error) throw error;
+        const data =await createSubcategory(subcategoryData,uuidv4())
 
         setSubcategories((prev) => [...prev, data as Subcategory]);
         toast.success("Subcategory created successfully!");

@@ -1,6 +1,5 @@
 import { formatDistanceToNow } from "date-fns";
 import { User, UserPlus } from "lucide-react";
-import { createClient } from "node_modules/@resume/db/supabaseServer";
 //import { supabase } from "node_modules/@resume/db/supabaseClient";
 import { supabase } from "node_modules/@resume/db/supabaseClient";
 
@@ -10,7 +9,6 @@ async function fetchRecentActivity() {
       cache: 'no-store', // Ensure fresh data
     })
     try{
-//const supabase=await createClient()
 const {data:{user},error:authError}=await supabase.auth.getUser()
     // 1. Total users
     const { count: totalUsers, error: userError } = await supabase
@@ -40,7 +38,6 @@ const {data:{user},error:authError}=await supabase.auth.getUser()
     return null;
   }
 let recentUsers=count
-console.log(`user count for analytics`,recentUsers)
 
    // if (recentError) throw recentError;
 
@@ -59,7 +56,6 @@ console.log(`user count for analytics`,recentUsers)
       .select("id, name, email, createdAt")
       .order("createdAt", { ascending: false })
       .limit(5);
-console.log('recentActivity:',recentActivity)
     if (activityError) throw activityError;
 
     const stats = {
@@ -75,7 +71,6 @@ console.log('recentActivity:',recentActivity)
         timestamp: user.createdAt,
       })) ?? [],
     };
-    console.log('stats in recent activity:',recentActivity)
     return stats
 
     }
@@ -96,7 +91,6 @@ console.log('recentActivity:',recentActivity)
   try {
     //@ts-ignore
     const {recentActivity:activities} = await fetchRecentActivity();
-console.log('received activites:',activities)
     //@ts-ignore
     if (activities?.length === 0) {
       return (

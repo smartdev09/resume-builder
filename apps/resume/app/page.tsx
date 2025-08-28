@@ -16,7 +16,6 @@ export default async function Page() {
           .from("reviews")
           .select("*")
     
-    console.log('sadasdas',data)
     if(data)
     return <LandingPage 
   initialReviews={data} 

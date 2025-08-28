@@ -6,17 +6,15 @@ import { useToast } from "@resume/ui/hooks/use-toast";
 import { saveResume } from "./actions";
 import { Button } from "@resume/ui/button";
 import { fileReplacer } from "utils/utils";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "@resume/db/supabaseClient";
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+
 
 export default function useAutoSaveResume(resumeData: ResumeValues) {
+
+  
   const searchParams = useSearchParams();
   const { toast } = useToast();
-
   const debouncedResumeData = useDebounce(resumeData, 1500);
 
   const [lastSavedData, setLastSavedData] = useState(

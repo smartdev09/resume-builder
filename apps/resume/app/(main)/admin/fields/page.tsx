@@ -55,8 +55,6 @@ export default function FieldsPage() {
 if(error){
 console.error('error fetching fields')}
 //@ts-ignore
-console.log('fields received from database:',data.fields)
-//@ts-ignore
       setFields(data || []);
     } catch (error) {
       console.error('Error fetching fields:', error);

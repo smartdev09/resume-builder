@@ -13,7 +13,6 @@ export default async function Page() {
 const supabase = createServerComponentClient({ cookies });
 
 const { data: { user }, error } = await supabase.auth.getUser();
-console.log(`(settings/page.tsx)>${user}`)
 if (error || !user) {
  // redirect('/sign-in'); // Use your actual login page URL
 }

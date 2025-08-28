@@ -1,10 +1,8 @@
 import { supabase } from '../../../../../packages/database/supabaseClient';
 import { v4 as uuidv4 } from 'uuid';
-//import {createClient} from '../../../../../packages/database/supabaseServer'
 
 export async function saveResume(values:any) {
   // 1️⃣ Authenticate user
-  //const supabase= await createClient()
   const { data, error: authError } = await supabase.auth.getSession();
   if (authError || !data.session?.user) {
     throw new Error("Please login with GitHub to continue");
@@ -71,10 +69,7 @@ const now = new Date().toISOString();
     }
   }
 try{
-    console.log('work_experiences', workExperiences)
-    console.log('educations', educations)
-    console.log('projects', projects)
-console.log('skill_sections', skillSections)
+   
     // 6️⃣ Insert related entities
     if(workExperiences)
  await insertRelated('work_experiences', workExperiences.map((workExperience:any)=>({ ...workExperience, id: uuidv4() })));

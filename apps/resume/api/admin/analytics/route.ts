@@ -10,7 +10,6 @@ import { createClient } from "../../../../../packages/database/supabaseServer";
 
 export async function GET(request: NextRequest) {
   try {
-    console.log('hello from activties route')
    // const session = await auth();
 
     // if (!session?.user) {

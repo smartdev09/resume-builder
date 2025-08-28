@@ -36,7 +36,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { session },
   } = await supabase.auth.getSession()
-console.log(`(utils>middleware): `,session?.user)
   if (
    !session?.user
     

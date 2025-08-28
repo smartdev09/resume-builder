@@ -39,42 +39,7 @@ export default function LandingPage({ initialReviews }: LandingPageProps) {
   const [user, setUser] = useState(null);
   const router = useRouter();
   const { toast } = useToast();
-  useEffect(()=>{
-   console.log('(Landing Page:)',user) 
-  })
-//@ts-ignore
-// useEffect(() => {
-//   const getUserDetails = async () => {
-//    // const supabase=await createClient()--wouldnt work, throws error on isntallation of next/header bacause package is server side use only
-
-//     const {
-//       data: { user},
-//       error
-//     } = await supabase.auth.getUser();
-
-//     if (error) {
-//       console.error("Error getting user:", error);
-//       toast({
-//         title: "Error fetching user",
-//         description: error.message
-//       });
-//       return;
-//     }
-
-//     console.log(user);
-
-//     if (user) {
-//        //@ts-ignore
-//        setUser(user);
-//       // Optional: redirect if already logged in
-//       // router.replace('/');
-//     } else {
-//       setUser(null);
-//     }
-//   };
-
-//   getUserDetails();
-// }, []);
+ 
 
  
 

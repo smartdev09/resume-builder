@@ -1,21 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@resume/ui/card";
 import { Users, FileText, Activity, Database } from "lucide-react";
-//import { createClient } from "node_modules/@resume/db/supabaseServer";
 import { supabase } from "node_modules/@resume/db/supabaseClient";
 async function fetchAnalytics() {
  
  try{
-      console.log('hello from activties route')
-//const supabase=await createClient()
-      // if (!session?.user) {
-      //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      // }
-  console.log('auth:',await supabase.auth.getSession())
+
       // 1. Total users
       const { count:totalUsers, error:userError } = await supabase
     .from("users")
     .select("email", { count: "exact", head: true });
-console.log('totlUsers:',totalUsers)
       if (userError) throw userError;
       // 2. Total resumes
       const { count: totalResumes, error: resumeError } = await supabase
@@ -25,27 +18,20 @@ console.log('totlUsers:',totalUsers)
       if (resumeError) throw resumeError;
   
       // 3. Recent users (last 30 days)
-   //    const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
 
 const { count:recentUsers, error } = await supabase
   .from('users')
   .select('id', { count: 'exact', head: true })
   .gte('created_at', last30Days);
-      // const { data, error } = await supabase.auth.admin.listUsers({
-    //   page: 1,
-    //   perPage: 1000,
-    // });
+   
   
     if (error) {
       console.error("Admin API error:", error.message);
       return null;
     }
   
-    // Filter users created in last 30 days
-    // const recentUsers = data.users.filter(
-    //   (u) => new Date(u.created_at) >= new Date(last30Days)
-    // ).length;
+ 
   
       // 4. Active users (last 7 days updated)
       const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -78,7 +64,6 @@ const { count:recentUsers, error } = await supabase
           timestamp: user.createdAt,
         })) ?? [],
       };
-      console.log('stats before returning:',stats)
   return stats
   
  }
@@ -86,27 +71,10 @@ const { count:recentUsers, error } = await supabase
 
  }
  
- 
-//   try {
-//     const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/admin/analytics`, {
-//       cache: 'no-store', // Ensure fresh data
-//     }
-//   );
-    
-//     if (!response.ok) {
-//       throw new Error('Failed to fetch analytics');
-//     }
-    
-//     return await response.json();
-//   } catch (error) {
-//     console.error('Error fetching analytics:', error);
-//     return null;
-//   }
-// }
+
 }
 export async function DashboardStats() {
   const analytics = await fetchAnalytics();
-console.log('stats in dashboardStats:',analytics)
   // Fallback stats if API fails
   const stats = [
     {
