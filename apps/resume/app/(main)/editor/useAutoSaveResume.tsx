@@ -6,7 +6,7 @@ import { useToast } from "@resume/ui/hooks/use-toast";
 import { saveResume } from "./actions";
 import { Button } from "@resume/ui/button";
 import { fileReplacer } from "utils/utils";
-import { supabase } from "@resume/db/supabaseClient";
+import { supabase } from "node_modules/@resume/db/supabaseClient";
 
 
 

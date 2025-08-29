@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 // @ts-ignore
 export default async function Home({searchParams,}: any) {
   // @ts-ignore
-  const { resumeId } = searchParams ?? {};
+  //const { resumeId } = searchParams ?? {};
 
   const supabase = await createClient();
 
@@ -26,24 +26,24 @@ export default async function Home({searchParams,}: any) {
 
   let resumeToEdit = null;
 
-  if (resumeId) {
-    const { data, error } = await supabase
-      .from("resumes")
-      .select(
-        `
-        *,
-        work_experiences(*),
-        educations(*),
-        projects(*),
-        skill_sections(*)
-      `
-      )
-      .eq("id", resumeId)
-      .single();
+  // if (resumeId) {
+  //   const { data, error } = await supabase
+  //     .from("resumes")
+  //     .select(
+  //       `
+  //       *,
+  //       work_experiences(*),
+  //       educations(*),
+  //       projects(*),
+  //       skill_sections(*)
+  //     `
+  //     )
+  //     .eq("id", resumeId)
+  //     .single();
 
-    if (error) throw error;
-    resumeToEdit = data;
-  }
+  //   if (error) throw error;
+  //   resumeToEdit = data;
+  // }
 
   return (
     <SidebarProvider>
