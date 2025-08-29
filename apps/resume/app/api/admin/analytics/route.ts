@@ -1,21 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-//import { createClient } from "@resume/db/supabaseServer";
-import { createClient } from "node_modules/@resume/db/supabaseServer";
-
-// import { createClient } from "@supabase/supabase-js";
-
-// const supabase = createClient(
-//   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-//   process.env.SUPABASE_SERVICE_ROLE_KEY! // ⚠️ Server only, never expose to client
-// );
-
+import { createClient } from "@resume/db/supabaseServer";
+//@ts-ignore
 export async function GET(request: NextRequest) {
   try {
-   // const session = await auth();
-
-    // if (!session?.user) {
-    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    // }
+ 
 const supabase=await createClient()
 console.log('auth:',await supabase.auth.getUser())
     // 1. Total users
@@ -81,7 +69,7 @@ console.log('auth:',await supabase.auth.getUser())
         timestamp: user.createdAt,
       })) ?? [],
     };
-
+//@ts-ignore
     return NextResponse.json(stats);
   } catch (error) {
     console.error("Error fetching analytics:", error);

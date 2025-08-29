@@ -3,7 +3,7 @@ import NewResumeEditor from "./NewResumeEditor";
 import { SidebarProvider, SidebarInset } from "@resume/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
 import { redirect } from "next/navigation";
-import { createClient } from "node_modules/@resume/db/supabaseServer"; // ✅ use alias, not node_modules import
+import { createClient } from "@resume/db/supabaseServer"; // ✅ use alias, not node_modules import
 
 export const metadata: Metadata = {
   title: "Build your resume",
@@ -16,11 +16,11 @@ export default async function Home({searchParams,}: any) {
   const supabase = await createClient();
 
   const {
-    data: { user },
+    data: { session },
     error,
-  } = await supabase.auth.getUser();
+  } = await supabase.auth.getSession();
 
-  if (error || !user) {
+  if (error || !session?.user) {
   // redirect("/sign-in");
   }
 

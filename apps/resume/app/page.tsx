@@ -1,7 +1,7 @@
 import LandingPage from "./components/LandingPage";
 import { createServerComponentClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from "next/headers";
-import { createClient } from "node_modules/@resume/db/supabaseServer";
+import { createClient } from "@resume/db/supabaseServer";
 export default async function Page() {
   const supabase =await createClient()  
   //createServerComponentClient({ cookies });

@@ -1,7 +1,7 @@
 import { formatDistanceToNow } from "date-fns";
 import { User, UserPlus } from "lucide-react";
 //import { supabase } from "node_modules/@resume/db/supabaseClient";
-import { supabase } from "node_modules/@resume/db/supabaseClient";
+import { supabase } from "@resume/db/supabaseClient";
 
 async function fetchRecentActivity() {
     try {

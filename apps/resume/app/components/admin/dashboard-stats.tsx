@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@resume/ui/card";
 import { Users, FileText, Activity, Database } from "lucide-react";
-import { supabase } from "node_modules/@resume/db/supabaseClient";
+import { supabase } from "@resume/db/supabaseClient";
 async function fetchAnalytics() {
  
  try{

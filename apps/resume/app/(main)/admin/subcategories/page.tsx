@@ -43,7 +43,6 @@ const categoryTypeLabels: { [key: string]: string } = {
   LOCATION: "Locations",
   WORK_AUTHORIZATION: "Work Authorization",
 };
-import { supabase } from "node_modules/@resume/db/supabaseClient";
 export default function SubcategoriesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);

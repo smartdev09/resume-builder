@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { AdminSidebar } from "../../components/admin/admin-sidebar";
 import { AdminHeader } from "../../components/admin/admin-header";
 //import { supabase } from "node_modules/@resume/db/supabaseClient";
-import { createClient } from "node_modules/@resume/db/supabaseServer";
+import { createClient } from "@resume/db/supabaseServer";
 export default async function AdminLayout({
   children,
 }: {

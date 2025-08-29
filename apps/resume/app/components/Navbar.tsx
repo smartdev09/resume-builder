@@ -7,7 +7,7 @@ import { redirect } from "next/navigation";
 import { Star, User } from 'lucide-react';
 import { Button } from "@resume/ui/button";
 import { StarUs } from "./StarUS";
-import { createClient } from "node_modules/@resume/db/supabaseServer";
+import { createClient } from "@resume/db/supabaseServer";
 export default async function Navbar() {
     const supabase=await createClient()
     const{ data:user, error}= await supabase.auth.getUser()

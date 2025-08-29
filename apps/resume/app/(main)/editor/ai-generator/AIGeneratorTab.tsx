@@ -1,3 +1,4 @@
+'use client'
 import { useState,useEffect } from 'react';
 import { ResumeValues } from 'utils/validations';
 import { parseResumeFromPdf } from 'utils/lib/parse-resume-from-pdf';
@@ -140,7 +141,7 @@ const handleJobAnalysis = async () => {
   try {
     const currentSkills = getCurrentSkills();
     
-    const response = await fetch('/ai/analyze-job', {
+    const response = await fetch('/api/ai/analyze-job', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

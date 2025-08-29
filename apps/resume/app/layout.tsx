@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-// import { SessionProvider } from "next-auth/react";
 import { Rubik } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { Providers } from "./providers";
@@ -7,8 +6,7 @@ import "@resume/ui/globals.css";
 import { Toaster } from "@resume/ui/toaster";
 import Navbar from "./components/Navbar";
 import { headers } from "next/headers";
-//import { SessionContextProvider } from "@supabase/auth-helpers-react";
-//import { supabase } from "node_modules/@resume/db/supabaseClient";
+
 const rubik = Rubik({
   subsets: ["latin"], // ✅ fix applied here
 });

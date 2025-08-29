@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 //import { createClient } from "node_modules/@resume/db/supabaseServer";
 //import { supabase } from "../../../../../../packages/database/supabaseClient";
-import { createClient } from "node_modules/@resume/db/supabaseServer";
+import { createClient } from "@resume/db/supabaseServer";
 // GET /api/admin/users - Get all users
 
 export async function GET(request: NextRequest) {
