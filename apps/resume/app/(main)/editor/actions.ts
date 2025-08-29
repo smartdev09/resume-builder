@@ -63,9 +63,9 @@ const now = new Date().toISOString();
       }))
     );
   if(error)
-  console.error(error)}
+  throw error}
     catch(e){
-      console.error('insertRelated: ',e)
+      console.error('insertRelated: ',table,records,':',e)
     }
   }
 try{

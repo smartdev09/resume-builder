@@ -25,8 +25,8 @@ export default function UsersPage() {
   const fetchUsers = async () => {
     try {
 
-  const users=getUsers()
-
+  const users=await getUsers()
+console.log('users:',users)
      //@ts-ignore
       setUsers(users || []);
     } catch (error) {
@@ -77,7 +77,7 @@ export default function UsersPage() {
                 <p className="text-sm text-muted-foreground">No users found</p>
               </div>
             ) : (
-              users.map((user) => (
+             users.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">

@@ -38,7 +38,8 @@ export default async function Home() {
     redirect("sign-in");
   }
 
-  // ✅ Fetch resumes from Supabase instead of Prisma
+  // ✅ Fetch resumes from Supabase 
+  //@ts-ignore
   const {data:resumes,error:resumesError}=await getResumes(user.id)
 
   if (resumesError) {
