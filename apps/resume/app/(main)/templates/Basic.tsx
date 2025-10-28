@@ -44,7 +44,8 @@ export default function Basic({
     const primaryFontSize = getFontSizeInPx(resumeData.primaryFontSize);
     const secondaryFontSize = getFontSizeInPx(resumeData.secondaryFontSize);
   
-    return (
+    return (<>
+     
       <div
         className={cn(
           "aspect-[210/297] h-fit w-full bg-white text-black",
@@ -75,7 +76,7 @@ export default function Basic({
           )}
         </div>
       </div>
-    );
+    </>);
   }
   
   function PersonalInfoHeader({ resumeData, primaryFontSize, secondaryFontSize }: ResumeSectionProps) {
@@ -184,7 +185,6 @@ export default function Basic({
   
   function WorkExperienceSection({ resumeData, primaryFontSize, secondaryFontSize }: ResumeSectionProps) {
     const { workExperiences, primaryColorHex } = resumeData;
-  
     const workExperiencesNotEmpty = workExperiences?.filter(
       (exp) => Object.values(exp).filter(Boolean).length > 0,
     );
@@ -219,14 +219,15 @@ export default function Basic({
                 }}
               >
                 <span>{exp.position}</span>
+                <span>{exp.description}</span>
                 {exp.startDate && (
                   <span>
                     {formatDate(new Date(exp?.startDate), "MM/yyyy")} - {" "}
-                    {exp.endDate ? formatDate(new Date(exp?.endDate), "MM/yyyy") : "Present"}
+                    {/* {exp.endDate ? formatDate(new Date(exp?.endDate), "MM/yyyy") : "Present"} */}
                   </span>
                 )}
               </div>
-              <p className="text-xs font-semibold" style={{ fontSize: `${secondaryFontSize || 12}px` }}>{exp.company}</p>
+              <p className="text-xs font-semibold" style={{ fontSize: `${secondaryFontSize ||12}px` }}>{exp.company}</p>
               <div className="whitespace-pre-line text-xs" style={{ fontSize: `${secondaryFontSize || 12}px` }}>{exp.description}</div>
             </div>
           ))}

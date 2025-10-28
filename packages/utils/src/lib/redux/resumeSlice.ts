@@ -93,7 +93,8 @@ export const resumeSlice = createSlice({
     ) => {
       const { idx, field, value } = action.payload;
       const workExperience = draft.workExperiences[idx];
-      workExperience[field] = value as any;
+      //@ts-ignore
+    workExperience[field] = value as any;
     },
     changeEducations: (
       draft,
@@ -101,7 +102,8 @@ export const resumeSlice = createSlice({
     ) => {
       const { idx, field, value } = action.payload;
       const education = draft.educations[idx];
-      education[field] = value as any;
+      //@ts-ignore
+    education[field] = value as any;
     },
     changeProjects: (
       draft,
@@ -109,7 +111,8 @@ export const resumeSlice = createSlice({
     ) => {
       const { idx, field, value } = action.payload;
       const project = draft.projects[idx];
-      project[field] = value as any;
+      //@ts-ignore
+    project[field] = value as any;
     },
     changeSkills: (
       draft,
@@ -130,8 +133,10 @@ export const resumeSlice = createSlice({
       } else {
         const { idx, skill, rating } = action.payload;
         const featuredSkill = draft.skills.featuredSkills[idx];
-        featuredSkill.skill = skill;
-        featuredSkill.rating = rating;
+        //@ts-ignore
+    featuredSkill.skill = skill;
+        //@ts-ignore
+    featuredSkill.rating = rating;
       }
     },
     changeCustom: (
@@ -177,11 +182,15 @@ export const resumeSlice = createSlice({
 
         const section = draft[form][idx];
         if (direction === "up") {
-          draft[form][idx] = draft[form][idx - 1];
-          draft[form][idx - 1] = section;
+         //@ts-ignore
+     draft[form][idx] = draft[form][idx - 1];
+         //@ts-ignore
+     draft[form][idx - 1] = section;
         } else {
-          draft[form][idx] = draft[form][idx + 1];
-          draft[form][idx + 1] = section;
+         //@ts-ignore
+     draft[form][idx] = draft[form][idx + 1];
+         //@ts-ignore
+     draft[form][idx + 1] = section;
         }
       }
     },

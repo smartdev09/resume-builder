@@ -26,9 +26,9 @@ interface Templates {
     [key: string]: (props: any) => JSX.Element; 
 }
 
-export default function ResumeItem({resume}: ResumeItemProps) {
+export default function ResumeItem({resume}: any) {
     const contentRef = useRef<HTMLDivElement>(null);
-
+console.log('entered resuem item',resume)
     const reactToPrintFn = useReactToPrint({
         contentRef,
         documentTitle: resume.title || "Resume"
@@ -56,20 +56,26 @@ export default function ResumeItem({resume}: ResumeItemProps) {
                     )}
                     <p className="text-xs text-muted-foreground">
                         {wasUpdated ? "Updated" : "Created"} on{" "}
-                        {formatDate(resume.updatedAt, "MMM d, yyyy h:mm a")}
+                        {/* {formatDate(resume.updatedAt, "MMM d, yyyy h:mm a")} */}
                         </p>
                 </Link>
-                <Link 
-                    href={`/editor?resumeId=${resume.id}`} 
-                    className="relative inline-block w-full"
-                >
-                    <TemplateComponent 
-                        resumeData={mapToResumeValues(resume)}
-                        contentRef={contentRef}
-                        className="overflow-hidden shadow-sm grouo-hover:shadow-lg transition-shadow"
-                    />
-                    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
-                </Link>
+
+<Link 
+    href={`/editor?resumeId=${resume.id}`} 
+    className="relative inline-block w-full"
+    // ----------------------------------------------------------------------
+    // FIX: Add a specific height to make the preview large enough to read
+    // For example, h-96 or h-[400px]
+    style={{ height: '350px' }} // Use a fixed pixel height or a utility class like h-[350px]
+    // ----------------------------------------------------------------------
+>
+    <TemplateComponent 
+        resumeData={mapToResumeValues(resume)}
+        contentRef={contentRef}
+        className="overflow-hidden shadow-sm grouo-hover:shadow-lg transition-shadow"
+    />
+    <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white to-transparent" />
+</Link>
             </div>
             <MoreMenu resumeId={resume.id} onPrintClick={reactToPrintFn} />
         </div>

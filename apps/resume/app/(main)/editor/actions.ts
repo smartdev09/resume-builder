@@ -5,6 +5,8 @@ export async function saveResume(values:any) {
   // 1️⃣ Authenticate user
   const { data, error: authError } = await supabase.auth.getSession();
   if (authError || !data.session?.user) {
+    console.log('data',data)
+    console.log('autherror:',authError)
     throw new Error("Please login with GitHub to continue");
   }
 

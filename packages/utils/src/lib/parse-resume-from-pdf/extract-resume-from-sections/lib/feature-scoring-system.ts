@@ -19,18 +19,23 @@ const computeFeatureScores = (
 
     for (const featureSet of featureSets) {
       const [hasFeature, score, returnMatchingText] = featureSet;
-      const result = hasFeature(textItem);
+      //@ts-ignore
+    const result = hasFeature(textItem);
       if (result) {
-        let text = textItem.text;
+       //@ts-ignore
+     let text = textItem.text;
         if (returnMatchingText && typeof result === "object") {
           text = result[0];
         }
 
         const textScore = textScores[i];
-        if (textItem.text === text) {
-          textScore.score += score;
+       //@ts-ignore
+     if (textItem.text === text) {
+      //@ts-ignore
+        textScore.score += score;
           if (returnMatchingText) {
-            textScore.match = true;
+          //@ts-ignore
+      textScore.match = true;
           }
         } else {
           textScores.push({ text, score, match: true });

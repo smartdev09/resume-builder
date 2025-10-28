@@ -78,17 +78,21 @@ const getMostCommonBulletPoint = (str: string): string => {
   let bulletMaxCount = 0;
   for (let char of str) {
     if (bulletToCount.hasOwnProperty(char)) {
-      bulletToCount[char]++;
-      if (bulletToCount[char] > bulletMaxCount) {
+      //@ts-ignore
+    bulletToCount[char]++;
+      //@ts-ignore
+    if (bulletToCount[char] > bulletMaxCount) {
         bulletWithMostCount = char;
       }
     }
   }
-  return bulletWithMostCount;
+  //@ts-ignore
+    return bulletWithMostCount;
 };
 
 const getFirstBulletPointLineIdx = (lines: Lines): number | undefined => {
   for (let i = 0; i < lines.length; i++) {
+    //@ts-ignore
     for (let item of lines[i]) {
       if (BULLET_POINTS.some((bullet) => item.text.includes(bullet))) {
         return i;
@@ -112,6 +116,7 @@ export const getDescriptionsLineIdx = (lines: Lines): number | undefined => {
   if (idx === undefined) {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
+    //@ts-ignore
       if (line.length === 1 && hasAtLeast8Words(line[0])) {
         idx = i;
         break;

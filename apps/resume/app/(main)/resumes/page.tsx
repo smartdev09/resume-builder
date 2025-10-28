@@ -19,9 +19,31 @@ import { redirect } from "next/navigation";
 import {getCount,
   getResumes
 } from '@resume/db/resume'
-
+interface WorkExperience {
+  id: string;
+  position: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+}
+// Define the final shape of the returned resume data
+export interface FormattedResumeData {
+    id: string;
+    title: string;
+    description: string | null;
+    photo: string | null; // Corresponds to photoUrl in the schema
+    firstName: string | null;
+    lastName: string | null;
+    jobTitle: string | null;
+    phone: string | null;
+    city: string | null;
+    country: string | null;
+    email: string | null;
+    workExperiences: WorkExperience[];
+}
 export default async function Home() {
- const supabase = await createClient();
+  const supabase = await createClient();
 
   // ✅ Check auth with getUser()
   const {
@@ -39,17 +61,18 @@ export default async function Home() {
   }
 
   // ✅ Fetch resumes from Supabase 
+//let resumes:FormattedResumeData[]
   //@ts-ignore
-  const {data:resumes,error:resumesError}=await getResumes(user.id)
+const resumes=await getResumes(user.id)
+  //const {data:resumes,error:resumesError}=await getResumes(user.id)
 
-  if (resumesError) {
-    console.error("Error fetching resumes:", resumesError.message);
-  }
+  // if (resumesError) {
+  //   console.error("Error fetching resumes:", resumesError.message);
+  // }
   //get total count of all resumes
 const totalCount=await getCount(user.id)
 
 
-  console.log("resumes", resumes);
 
   return (
     <main className="max-w-7xl mx-auto w-full px-3 py-6 space-y-6">

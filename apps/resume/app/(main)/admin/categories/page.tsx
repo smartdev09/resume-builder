@@ -47,7 +47,6 @@ export default function CategoriesPage() {
     try {
      
 const categories=await getCategories()
-console.log(categories)
 //@ts-ignore
       setCategories(categories || []);
     } catch (error) {

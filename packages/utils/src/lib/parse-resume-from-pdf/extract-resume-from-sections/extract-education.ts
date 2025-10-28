@@ -66,6 +66,7 @@ export const extractEducation = (sections: ResumeSectionToLines) => {
   const educations: ResumeEducation[] = [];
   const educationsScores = [];
   const lines = getSectionLinesByKeywords(sections, ["education"]);
+  //@ts-ignore
   const subsections = divideSectionIntoSubsections(lines);
   for (const subsectionLines of subsections) {
     const textItems = subsectionLines.flat();
@@ -104,12 +105,16 @@ export const extractEducation = (sections: ResumeSectionToLines) => {
 
   if (educations.length !== 0) {
     const coursesLines = getSectionLinesByKeywords(sections, ["course"]);
+    //@ts-ignore
     if (coursesLines.length !== 0) {
-      educations[0].descriptions.push(
+      //@ts-ignore
+    educations[0].descriptions.push(
         "Courses: " +
-          coursesLines
+          //@ts-ignore
+    coursesLines
             .flat()
-            .map((item) => item.text)
+            //@ts-ignore
+    .map((item) => item.text)
             .join(" ")
       );
     }

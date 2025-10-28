@@ -7,7 +7,7 @@ const getModel = () => {
   // Default to Groq, but can easily switch to OpenAI or other providers
   if (process.env.GROQ_API_KEY) {
     const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
-    return groq("llama3-70b-8192");
+    return groq("llama-3.3-70b-versatile");
   } else if (process.env.OPENAI_API_KEY) {
     const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
     return openai("gpt-4o-mini");

@@ -21,6 +21,7 @@ export default async function Home({searchParams,}: any) {
   } = await supabase.auth.getSession();
 
   if (error || !session?.user) {
+    console.log('entering editor mode with error:',error,"and user",session?.user)
   // redirect("/sign-in");
   }
 

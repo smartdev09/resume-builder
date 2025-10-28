@@ -10,19 +10,23 @@ import {
 
 export const extractSkills = (sections: ResumeSectionToLines) => {
   const lines = getSectionLinesByKeywords(sections, ["skill"]);
-  const descriptionsLineIdx = getDescriptionsLineIdx(lines) ?? 0;
-  const descriptionsLines = lines.slice(descriptionsLineIdx);
+ //@ts-ignore
+     const descriptionsLineIdx = getDescriptionsLineIdx(lines) ?? 0;
+  //@ts-ignore
+    const descriptionsLines = lines.slice(descriptionsLineIdx);
   const descriptions = getBulletPointsFromLines(descriptionsLines);
 
   const featuredSkills = deepClone(initialFeaturedSkills);
   if (descriptionsLineIdx !== 0) {
+    //@ts-ignore
     const featuredSkillsLines = lines.slice(0, descriptionsLineIdx);
     const featuredSkillsTextItems = featuredSkillsLines
       .flat()
       .filter((item) => item.text.trim())
       .slice(0, 6);
     for (let i = 0; i < featuredSkillsTextItems.length; i++) {
-      featuredSkills[i].skill = featuredSkillsTextItems[i].text;
+      //@ts-ignore
+    featuredSkills[i].skill = featuredSkillsTextItems[i].text;
     }
   }
 

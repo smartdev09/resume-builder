@@ -8,8 +8,6 @@ import { Button } from "@resume/ui/button";
 import { fileReplacer } from "utils/utils";
 import { supabase } from "node_modules/@resume/db/supabaseClient";
 
-
-
 export default function useAutoSaveResume(resumeData: ResumeValues) {
 
   
@@ -40,7 +38,7 @@ export default function useAutoSaveResume(resumeData: ResumeValues) {
         setIsSaving(true);
         setIsError(false);
 
-        // ✅ Supabase GitHub session check
+       // ✅ Supabase GitHub session check
         const { data: { session }, error: sessionError } =
           await supabase.auth.getSession();
 
@@ -77,8 +75,8 @@ export default function useAutoSaveResume(resumeData: ResumeValues) {
             `?${newSearchParams.toString()}`
           );
         }
-      } catch (error) {
-        console.error('errro:',error);
+      } catch (error) {console.log('error here:',error)
+        console.error('error:',error);
         setIsError(true);
 
         const { dismiss } = toast({

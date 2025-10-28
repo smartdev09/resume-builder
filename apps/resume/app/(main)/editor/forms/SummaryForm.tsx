@@ -6,22 +6,46 @@ import { EditorFormProps } from "utils/types";
 import { summarySchema, SummaryValues } from "utils/validations";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useEffect, useRef, useState } from "react";
-import ReactQuill from "react-quill-new";
 import "react-quill/dist/quill.snow.css";
 import { QuillToolbar } from "./QuillToolbar";
 import { useForm } from "react-hook-form";
+// *************** MODIFICATION START ***************
+// app/(main)/editor/forms/SummaryForm.tsx
+
+// ... (existing imports)
+import dynamic from "next/dynamic";
+import type ReactQuill from "react-quill-new"; // Import type for ref usage
+// ...
+
+// 1. Define the type for the component instance that includes the ref
+// This cast helps TypeScript treat the result as a component that can accept a ref.
+type ReactQuillType = typeof ReactQuill;
+
+// 2. Remove 'forwardRef: true' and cast the result
+const ReactQuillNoSSR = dynamic(
+    () => import('react-quill-new'),
+    { 
+        ssr: false, 
+        loading: () => <div className="min-h-[150px] p-4 border border-border rounded-md bg-background text-white">Loading editor...</div> 
+    }
+) as ReactQuillType; // <-- Cast the result type here
+
+
+// *************** MODIFICATION END ***************
 
 export default function SummaryForm({
     resumeData, 
     setResumeData
 } : EditorFormProps) {
+
     const form = useForm<SummaryValues>({  
         resolver: zodResolver(summarySchema),
         defaultValues: {
             summary: resumeData.summary || ""           
         }
     })
-  const quillRef = useRef<ReactQuill>(null);
+  // Use the type import for the ref
+  const quillRef = useRef<ReactQuill | null>(null);
   const [activeFormats, setActiveFormats] = useState<string[]>([]);
 
     useEffect(() => {
@@ -78,7 +102,8 @@ export default function SummaryForm({
                                     activeFormats={activeFormats}
                                 />
                                  <FormControl>
-                                        <ReactQuill
+                                        {/* *************** MODIFICATION START: Use the NoSSR component *************** */}
+                                        <ReactQuillNoSSR
                                             ref={quillRef}
                                             theme="snow"
                                             value={field.value}
@@ -96,6 +121,7 @@ export default function SummaryForm({
                                             }}
                                             className="[&_.ql-container]:border-border [&_.ql-editor]:min-h-[150px] [&_.ql-editor]:text-white [&_.ql-editor]:bg-background [&_.ql-container]:rounded-md [&_.ql-editor]:rounded-md"
                                         />
+                                        {/* *************** MODIFICATION END *************** */}
 
                                     </FormControl>
                             </FormItem>
