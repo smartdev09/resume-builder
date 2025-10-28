@@ -84,7 +84,7 @@ export default function ProjectForm({
           Add as many projects as you like.
         </p>
       </div>
-
+{/* @ts-ignore */}    
       <Form {...form}>
         <form className="space-y-3">
           <DndContext

@@ -52,7 +52,6 @@ export default function ResumeEditor({ resumeToEdit } : ResumeEditorProps) {
         );
 
         if (hasReduxData) {
-            console.log('Using Redux state for resume data');
             return {
                 ...mapReduxResumeToFormValues(storedResume),
                 selectedTemplate: 'simple'
@@ -61,12 +60,10 @@ export default function ResumeEditor({ resumeToEdit } : ResumeEditorProps) {
         
         // Fall back to database resume if editing existing
         if (resumeToEdit) {
-            console.log('Using database resume for resume data');
             return mapToResumeValues(resumeToEdit);
         }
         
         // Default empty form
-        console.log('Using empty form for resume data');
         return { 
             selectedTemplate: 'simple',
             skillSections: []
@@ -90,7 +87,6 @@ export default function ResumeEditor({ resumeToEdit } : ResumeEditorProps) {
         if (hasReduxData && !resumeToEdit) {
             // Small delay to ensure the form is populated first
             const timeoutId = setTimeout(() => {
-                console.log('Clearing Redux state after successful form population');
                 dispatch(setResume(initialResumeState));
             }, 1000);
             
@@ -98,7 +94,6 @@ export default function ResumeEditor({ resumeToEdit } : ResumeEditorProps) {
         }
     }, [dispatch, resumeToEdit, storedResume]);
     
-    console.log('resumeData', resumeData)
     const [showResumePreviewOnSmallScreen, setShowResumePreviewOnSmallScreen] = useState(false);
     const [selectedTemplate, setSelectedTemplate] = useState(resumeData.selectedTemplate);
 

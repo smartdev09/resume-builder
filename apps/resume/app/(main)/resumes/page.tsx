@@ -5,8 +5,7 @@ import { PlusSquare } from "lucide-react";
 import { Metadata } from "next";
 import Link from "next/link";
 import ResumeItem from "./ResumeItem";
-import { auth } from "utils/auth";
-
+import {createClient} from '@resume/db/supabaseServer'
 export const metadata: Metadata = {
   keywords: [
     'Resume builder',
@@ -16,30 +15,65 @@ export const metadata: Metadata = {
   ],
   title: 'Resume builder',
 }
-
+import { redirect } from "next/navigation";
+import {getCount,
+  getResumes
+} from '@resume/db/resume'
+interface WorkExperience {
+  id: string;
+  position: string;
+  location: string;
+  startDate: string;
+  endDate: string;
+  description: string;
+}
+// Define the final shape of the returned resume data
+export interface FormattedResumeData {
+    id: string;
+    title: string;
+    description: string | null;
+    photo: string | null; // Corresponds to photoUrl in the schema
+    firstName: string | null;
+    lastName: string | null;
+    jobTitle: string | null;
+    phone: string | null;
+    city: string | null;
+    country: string | null;
+    email: string | null;
+    workExperiences: WorkExperience[];
+}
 export default async function Home() {
+  const supabase = await createClient();
 
-  const session = await auth();
+  // ✅ Check auth with getUser()
+  const {
+    data: { user },
+    error: userError,
+  } = await supabase.auth.getUser();
 
-  const [resumes, totalCount] = await Promise.all([
-    prisma.resume.findMany({
-      where: {
-        userid: session?.user?.id,
-      },
-      orderBy: {
-        updatedAt: 'desc'
-      },
-      include: resumeDataIncludes
-    }),
-    prisma.resume.count({
-      where: {
-        userid: session?.user?.id
-      }
-    })
-  ])
+  if (userError) {
+    console.error("Error fetching user:", userError.message);
+    redirect("sign-in");
+  }
 
-  console.log('resumes', resumes)
-  
+  if (!user) {
+    redirect("sign-in");
+  }
+
+  // ✅ Fetch resumes from Supabase 
+//let resumes:FormattedResumeData[]
+  //@ts-ignore
+const resumes=await getResumes(user.id)
+  //const {data:resumes,error:resumesError}=await getResumes(user.id)
+
+  // if (resumesError) {
+  //   console.error("Error fetching resumes:", resumesError.message);
+  // }
+  //get total count of all resumes
+const totalCount=await getCount(user.id)
+
+
+
   return (
     <main className="max-w-7xl mx-auto w-full px-3 py-6 space-y-6">
       <div className="flex justify-end">

@@ -7,7 +7,7 @@ const getModel = () => {
   // Default to Groq, but can easily switch to OpenAI or other providers
   if (process.env.GROQ_API_KEY) {
     const groq = createGroq({ apiKey: process.env.GROQ_API_KEY! });
-    return groq("llama3-70b-8192");
+    return groq("llama-3.3-70b-versatile");
   } else if (process.env.OPENAI_API_KEY) {
     const openai = createOpenAI({ apiKey: process.env.OPENAI_API_KEY! });
     return openai("gpt-4o-mini");
@@ -18,6 +18,7 @@ const getModel = () => {
 
 export async function POST(req: Request) {
   try {
+    
     const { jobDescription, currentSkills = [] } = await req.json();
 
     if (!jobDescription) {
@@ -89,7 +90,7 @@ Analyze this job description and provide the skill extraction and matching analy
       temperature: 0.3, // Lower temperature for more consistent JSON output
       maxTokens: 1500
     });
-
+console.log('result in route.ts:',result)
     return result.toDataStreamResponse();
 
   } catch (error) {

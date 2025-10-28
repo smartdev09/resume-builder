@@ -8,6 +8,13 @@
         "db:deploy": "prisma migrate deploy"
     },
     "exports": {
-        ".": "./src/index.ts"
+        ".": "./src/index.ts",
+         "./categories": "./categories.ts",
+    "./subcategories": "./subcategories.ts",
+    "./supabaseClient": "./supabaseClient.ts",
+    "./supabaseServer": "./supabaseServer.ts",
+    "./resume": "./resume.ts",
+    "./user": "./user.ts"
+
     }
 }

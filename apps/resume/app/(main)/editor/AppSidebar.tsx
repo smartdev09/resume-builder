@@ -6,19 +6,25 @@ import {
   SidebarFooter,
 } from "@resume/ui/sidebar";
 import { useSearchParams } from "next/navigation";
-import { useSession } from "next-auth/react";
 import Tabs from "./Tabs";
 import { steps } from "./steps";
 import UserButton from "../../components/UserButton";
 import ThemeToggle from "@resume/ui/ThemeToggle";
 import { User } from "lucide-react";
 import { Button } from "@resume/ui/button";
-
+import {supabase} from '../../../../../packages/database/supabaseClient'
+import {useState,useEffect} from 'react'
 export function AppSidebar() {
   const searchParams = useSearchParams();
   const currentStep = searchParams.get("step") || steps[0]!.key;
-  const { data: session } = useSession();
-  
+  const [user,setUser]=useState(null)
+  useEffect(()=>{
+    async function getuser(){const user= await supabase.auth.getUser()
+      //@ts-ignore
+setUser(user)
+    }
+getuser()
+})
   function setCurrentStep(key: string) {
     const newSearchParams = new URLSearchParams(searchParams);
     newSearchParams.set("step", key);
@@ -52,8 +58,8 @@ export function AppSidebar() {
           
           {/* User Button */}
           <div className="flex justify-center">
-            {session?.user ? (
-              <UserButton user={session.user} />
+            {user ? (
+              <UserButton user={user} />
             ) : (
               <Button size="icon" variant="ghost">
                 <User className="w-5 h-5" />

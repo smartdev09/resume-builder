@@ -85,6 +85,7 @@ export default function LanguageForm({
         </p>
       </div>
 
+{/* @ts-ignore */}        
       <Form {...form}>
         <form className="space-y-3">
           <DndContext

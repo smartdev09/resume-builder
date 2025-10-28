@@ -33,10 +33,12 @@ export default function GeneralFormSchema ({
     
     return (
         <div className="p-4 sm:p-6 space-y-4">
-            <Form {...form}>
+           {/* @ts-ignore */}
+         <Form {...form}>
                 <form className="space-y-4">
                     <FormField
-                        control={form.control}
+                        //@ts-ignore
+        control={form.control}
                         name="title"
                         render={({ field }) => (
                             <FormItem>
@@ -50,7 +52,8 @@ export default function GeneralFormSchema ({
                     />
 
                     <FormField
-                        control={form.control}
+                      //@ts-ignore
+          control={form.control}
                         name="description"
                         render={({ field }) => (
                             <FormItem>

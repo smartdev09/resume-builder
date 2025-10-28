@@ -1,40 +1,57 @@
 import { Metadata } from "next";
 import NewResumeEditor from "./NewResumeEditor";
-import { prisma } from "@resume/db";
-import { auth } from "utils/auth";
-import { resumeDataIncludes } from "utils/types";
 import { SidebarProvider, SidebarInset } from "@resume/ui/sidebar";
 import { AppSidebar } from "./AppSidebar";
-import { mapToResumeValues } from "utils/utils";
-
-interface PageProps {
-    searchParams: Promise<{ resumeId?: string }>
-}
+import { redirect } from "next/navigation";
+import { createClient } from "@resume/db/supabaseServer"; // ✅ use alias, not node_modules import
 
 export const metadata: Metadata = {
-    title: 'Build your resume'
-}
+  title: "Build your resume",
+};
+// @ts-ignore
+export default async function Home({searchParams,}: any) {
+  // @ts-ignore
+  //const { resumeId } = searchParams ?? {};
 
-export default async function Home({ searchParams } : PageProps) {
-    const { resumeId } = await searchParams;
+  const supabase = await createClient();
 
-    const session = await auth();
+  const {
+    data: { session },
+    error,
+  } = await supabase.auth.getSession();
 
+  if (error || !session?.user) {
+    console.log('entering editor mode with error:',error,"and user",session?.user)
+  // redirect("/sign-in");
+  }
 
-    // if(!session?.user) toast('Please login') 
+  let resumeToEdit = null;
 
-    const resumeToEdit = resumeId ? 
-        await prisma.resume.findUnique({
-            where: { id: resumeId, userid: session?.user.id},
-            include: resumeDataIncludes
-        }) : null
-        console.log('resumeToEdit', resumeToEdit)
-    return (
-        <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-                <NewResumeEditor resumeToEdit={resumeToEdit}/>
-            </SidebarInset>
-        </SidebarProvider>
-    )
+  // if (resumeId) {
+  //   const { data, error } = await supabase
+  //     .from("resumes")
+  //     .select(
+  //       `
+  //       *,
+  //       work_experiences(*),
+  //       educations(*),
+  //       projects(*),
+  //       skill_sections(*)
+  //     `
+  //     )
+  //     .eq("id", resumeId)
+  //     .single();
+
+  //   if (error) throw error;
+  //   resumeToEdit = data;
+  // }
+
+  return (
+    <SidebarProvider>
+      <AppSidebar />
+      <SidebarInset>
+        <NewResumeEditor resumeToEdit={resumeToEdit} />
+      </SidebarInset>
+    </SidebarProvider>
+  );
 }

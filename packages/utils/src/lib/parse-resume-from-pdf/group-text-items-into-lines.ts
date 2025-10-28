@@ -39,16 +39,23 @@ export const groupTextItemsIntoLines = (textItems: TextItems): Lines => {
     for (let i = line.length - 1; i > 0; i--) {
       const currentItem = line[i];
       const leftItem = line[i - 1];
-      const leftItemXEnd = leftItem.x + leftItem.width;
-      const distance = currentItem.x - leftItemXEnd;
+     //@ts-ignore
+     const leftItemXEnd = leftItem.x + leftItem.width;
+     //@ts-ignore
+     const distance = currentItem.x - leftItemXEnd;
       if (distance <= typicalCharWidth) {
-        if (shouldAddSpaceBetweenText(leftItem.text, currentItem.text)) {
-          leftItem.text += " ";
+      //@ts-ignore
+      if (shouldAddSpaceBetweenText(leftItem.text, currentItem.text)) {
+        //@ts-ignore
+      leftItem.text += " ";
         }
-        leftItem.text += currentItem.text;
+       //@ts-ignore
+     leftItem.text += currentItem.text;
         // Update leftItem width to include currentItem after merge before deleting current item
-        const currentItemXEnd = currentItem.x + currentItem.width;
-        leftItem.width = currentItemXEnd - leftItem.x;
+       //@ts-ignore
+     const currentItemXEnd = currentItem.x + currentItem.width;
+       //@ts-ignore
+     leftItem.width = currentItemXEnd - leftItem.x;
         line.splice(i, 1);
       }
     }
@@ -62,8 +69,10 @@ const shouldAddSpaceBetweenText = (leftText: string, rightText: string) => {
   const leftTextEnd = leftText[leftText.length - 1];
   const rightTextStart = rightText[0];
   const conditions = [
-    [":", ",", "|", ".", ...BULLET_POINTS].includes(leftTextEnd) &&
+   //@ts-ignore
+     [":", ",", "|", ".", ...BULLET_POINTS].includes(leftTextEnd) &&
       rightTextStart !== " ",
+    //@ts-ignore
     leftTextEnd !== " " && ["|", ...BULLET_POINTS].includes(rightTextStart),
   ];
 

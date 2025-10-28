@@ -1,3 +1,4 @@
+'use client'
 import { useState,useEffect } from 'react';
 import { ResumeValues } from 'utils/validations';
 import { parseResumeFromPdf } from 'utils/lib/parse-resume-from-pdf';
@@ -160,21 +161,21 @@ const handleJobAnalysis = async () => {
 
     let result = '';      
 
+
     while (true && reader) {
       const { done, value } = await reader.read();
       if (done) break;
 
       const chunk = decoder.decode(value, { stream: true });
       result += chunk;
+    
     }
-
     let analysisData: JobAnalysisResult;
 
     try {
       // Use the same parsing logic as handleGenerateResume
       const reconstructedText = parseStreamingResponse(result);
       console.log('Reconstructed text:', reconstructedText);
-
       // Extract and parse the JSON from the reconstructed text
       analysisData = extractAndParseJSON(reconstructedText);
       console.log('✅ Parsed Analysis:', analysisData);
@@ -184,6 +185,7 @@ const handleJobAnalysis = async () => {
       console.error('Error parsing JSON:', e, '\nRaw:', result);
       throw new Error(`Analysis parsing failed: ${e instanceof Error ? e.message : 'Unknown error'}`);
     }
+      console.log('result:',result)
 
     // Convert to SkillMatch format
     const skills: SkillMatch[] = analysisData.extractedSkills.map(skill => ({
@@ -282,12 +284,10 @@ function flattenChunks(flatResponse: any): string {
       }
 
       let generatedResume: any;
-      console.log(`fullResponse:${fullResponse}`);
 
       try {
         // Parse the streaming response to extract the actual content
         const reconstructedText = parseStreamingResponse(fullResponse);
-        console.log('Reconstructed text:', reconstructedText);
 
         // Extract and parse the JSON from the reconstructed text
         generatedResume = extractAndParseJSON(reconstructedText);

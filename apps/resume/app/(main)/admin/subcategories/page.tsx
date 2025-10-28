@@ -1,5 +1,5 @@
 "use client";
-
+import {v4 as uuidv4} from "uuid"
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@resume/ui/card";
 import { FileText, Plus, Edit, Trash2, Filter } from "lucide-react";
@@ -14,7 +14,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@resume/ui/select";
-
+import { updateSubcategory, 
+  createSubcategory ,
+  deleteSubcategory,
+getCategoriesWithSubcategories} from "@resume/db/subcategories";
 interface Category {
   id: string;
   name: string;
@@ -36,11 +39,10 @@ interface Subcategory {
 
 const categoryTypeLabels: { [key: string]: string } = {
   JOB_FUNCTION: "Job Functions",
-  JOB_TYPE: "Job Types", 
+  JOB_TYPE: "Job Types",
   LOCATION: "Locations",
-  WORK_AUTHORIZATION: "Work Authorization"
+  WORK_AUTHORIZATION: "Work Authorization",
 };
-
 export default function SubcategoriesPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSubcategory, setEditingSubcategory] = useState<Subcategory | null>(null);
@@ -50,34 +52,22 @@ export default function SubcategoriesPage() {
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [filterCategoryId, setFilterCategoryId] = useState<string>("all");
 
-  // Fetch categories and subcategories from API
+  // Fetch categories and subcategories with Supabase
   const fetchData = async () => {
     try {
-      const [categoriesResponse, subcategoriesResponse] = await Promise.all([
-        fetch('/api/admin/categories'),
-        fetch('/api/admin/subcategories')
-      ]);
+      const {categoriesData,subcategoriesData}=await getCategoriesWithSubcategories()
+   
 
-      if (!categoriesResponse.ok || !subcategoriesResponse.ok) {
-        throw new Error('Failed to fetch data');
-      }
-
-      const [categoriesData, subcategoriesData] = await Promise.all([
-        categoriesResponse.json(),
-        subcategoriesResponse.json()
-      ]);
-
-      setCategories(categoriesData.categories || []);
-      setSubcategories(subcategoriesData.subcategories || []);
+      setCategories(categoriesData || []);
+      setSubcategories(subcategoriesData || []);
     } catch (error) {
-      console.error('Error fetching data:', error);
-      toast.error('Failed to load data');
+      console.error("Error fetching data:", error);
+      toast.error("Failed to load data");
     } finally {
       setLoading(false);
     }
   };
 
-  // Load data on mount
   useEffect(() => {
     fetchData();
   }, []);
@@ -93,27 +83,20 @@ export default function SubcategoriesPage() {
   };
 
   const handleDeleteSubcategory = async (subcategoryId: string) => {
-    if (!confirm('Are you sure you want to delete this subcategory?')) {
+    if (!confirm("Are you sure you want to delete this subcategory?")) {
       return;
     }
 
     setDeleteLoading(subcategoryId);
     try {
-      const response = await fetch(`/api/admin/subcategories/${subcategoryId}`, {
-        method: 'DELETE',
-      });
+     const error=await deleteSubcategory(subcategoryId)
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to delete subcategory');
-      }
 
-      // Remove the subcategory from the list
-      setSubcategories(prev => prev.filter(sub => sub.id !== subcategoryId));
-      toast.success('Subcategory deleted successfully');
+      setSubcategories((prev) => prev.filter((sub) => sub.id !== subcategoryId));
+      toast.success("Subcategory deleted successfully");
     } catch (error: any) {
-      console.error('Error deleting subcategory:', error);
-      toast.error(error.message || 'Failed to delete subcategory');
+      console.error("Error deleting subcategory:", error);
+      toast.error(error.message || "Failed to delete subcategory");
     } finally {
       setDeleteLoading(null);
     }
@@ -127,48 +110,41 @@ export default function SubcategoriesPage() {
     roles: string[];
   }) => {
     try {
-      const url = editingSubcategory 
-        ? `/api/admin/subcategories/${editingSubcategory.id}`
-        : '/api/admin/subcategories';
-      const method = editingSubcategory ? 'PUT' : 'POST';
-
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(subcategoryData),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || `Failed to ${editingSubcategory ? 'update' : 'create'} subcategory`);
-      }
-
-      const data = await response.json();
-      
       if (editingSubcategory) {
-        // Update the subcategory in the list
-        setSubcategories(prev => prev.map(sub => 
-          sub.id === editingSubcategory.id ? data.subcategory : sub
-        ));
-        toast.success('Subcategory updated successfully!');
+        // UPDATE
+       const data= await updateSubcategory(
+        subcategoryData,editingSubcategory.id
+       )
+
+        setSubcategories((prev) =>
+          prev.map((sub) =>
+            sub.id === editingSubcategory.id ? (data as Subcategory) : sub
+          )
+        );
+        toast.success("Subcategory updated successfully!");
       } else {
-        // Add the new subcategory to the list
-        setSubcategories(prev => [...prev, data.subcategory]);
-        toast.success('Subcategory created successfully!');
+        // CREATE
+        const data =await createSubcategory(subcategoryData,uuidv4())
+
+        setSubcategories((prev) => [...prev, data as Subcategory]);
+        toast.success("Subcategory created successfully!");
       }
     } catch (error: any) {
-      console.error('Error saving subcategory:', error);
-      toast.error(error.message || `Failed to ${editingSubcategory ? 'update' : 'create'} subcategory`);
-      throw error; // Re-throw to let the dialog handle it
+      console.error("Error saving subcategory:", error);
+      toast.error(
+        error.message ||
+          `Failed to ${editingSubcategory ? "update" : "create"} subcategory`
+      );
+      throw error;
     }
   };
 
-  // Filter subcategories based on selected category
-  const filteredSubcategories = filterCategoryId === "all" 
-    ? subcategories 
-    : subcategories.filter(sub => sub.categoryId === filterCategoryId);
+  // Filter subcategories
+  const filteredSubcategories =
+    filterCategoryId === "all"
+      ? subcategories
+      : subcategories.filter((sub) => sub.categoryId === filterCategoryId);
+
 
   if (loading) {
     return (

@@ -1,26 +1,80 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@resume/ui/card";
 import { Users, FileText, Activity, Database } from "lucide-react";
-
+import { supabase } from "@resume/db/supabaseClient";
 async function fetchAnalytics() {
-  try {
-    const response = await fetch(`${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/api/admin/analytics`, {
-      cache: 'no-store', // Ensure fresh data
-    });
-    
-    if (!response.ok) {
-      throw new Error('Failed to fetch analytics');
-    }
-    
-    return await response.json();
-  } catch (error) {
-    console.error('Error fetching analytics:', error);
-    return null;
-  }
-}
+ 
+ try{
 
+      // 1. Total users
+      const { count:totalUsers, error:userError } = await supabase
+    .from("users")
+    .select("email", { count: "exact", head: true });
+      if (userError) throw userError;
+      // 2. Total resumes
+      const { count: totalResumes, error: resumeError } = await supabase
+        .from("resumes")
+        .select("id", { count: "exact", head: true });
+  
+      if (resumeError) throw resumeError;
+  
+      // 3. Recent users (last 30 days)
+const last30Days = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+const { count:recentUsers, error } = await supabase
+  .from('users')
+  .select('id', { count: 'exact', head: true })
+  .gte('created_at', last30Days);
+   
+  
+    if (error) {
+      console.error("Admin API error:", error.message);
+      return null;
+    }
+  
+ 
+  
+      // 4. Active users (last 7 days updated)
+      const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+      const { count: activeUsers, error: activeError } = await supabase
+        .from("users")
+        .select("id", { count: "exact", head: true })
+        .gte("updatedAt", last7Days);
+  
+      if (activeError) throw activeError;
+  
+      // 5. Recent activity (latest 5 users)
+      const { data: recentActivity, error: activityError } = await supabase
+        .from("users")
+        .select("id, name, email, createdAt")
+        .order("createdAt", { ascending: false })
+        .limit(5);
+  
+      if (activityError) throw activityError;
+  
+      const stats = {
+        totalUsers,
+        totalResumes,
+        recentUsers,
+        activeUsers,
+        recentActivity: recentActivity?.map((user) => ({
+          id: `user-${user.id}`,
+          type: "user_joined",
+          title: `${user.name || user.email} joined`,
+          description: "New user registration",
+          timestamp: user.createdAt,
+        })) ?? [],
+      };
+  return stats
+  
+ }
+ catch(e){
+
+ }
+ 
+
+}
 export async function DashboardStats() {
   const analytics = await fetchAnalytics();
-
   // Fallback stats if API fails
   const stats = [
     {

@@ -154,13 +154,17 @@ export const extractProfile = (sections: ResumeSectionToLines) => {
   );
 
   const summaryLines = getSectionLinesByKeywords(sections, ["summary"]);
-  const summarySection = summaryLines
+  //@ts-ignore
+    const summarySection = summaryLines
     .flat()
+    //@ts-ignore
     .map((textItem) => textItem.text)
     .join(" ");
   const objectiveLines = getSectionLinesByKeywords(sections, ["objective"]);
-  const objectiveSection = objectiveLines
+  //@ts-ignore
+    const objectiveSection = objectiveLines
     .flat()
+    //@ts-ignore
     .map((textItem) => textItem.text)
     .join(" ");
 

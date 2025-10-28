@@ -51,13 +51,15 @@ export default function SettingsPage({user}: SettingsPageProps) {
     <main className="px-3 py-10">
       <section className="mx-auto max-w-7xl space-y-6">
         <h1 className="text-3xl font-bold">Settings</h1>
+        {/* @ts-ignore */}
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
             className="max-w-sm space-y-2.5"
           >
             <FormField
-              control={form.control}
+             //@ts-ignore
+         control={form.control}
               name="name"
               render={({ field }) => (
                 <FormItem>

@@ -1,4 +1,3 @@
-import { auth } from "utils/auth";
 import ThemeToggle from "@resume/ui/ThemeToggle";
 import UserButton from "./UserButton";
 import Image from "next/image";
@@ -8,10 +7,10 @@ import { redirect } from "next/navigation";
 import { Star, User } from 'lucide-react';
 import { Button } from "@resume/ui/button";
 import { StarUs } from "./StarUS";
-
+import { createClient } from "@resume/db/supabaseServer";
 export default async function Navbar() {
-    const session = await auth();
-    
+    const supabase=await createClient()
+    const{ data:user, error}= await supabase.auth.getUser()
     // if(!session ?.user) redirect('/')
     return (
         <header className="shadow-sm h-[48px]">
@@ -24,7 +23,8 @@ export default async function Navbar() {
                 </div>
                 <div className="flex items-center gap-3">
                     <ThemeToggle />
-                    {session ? <UserButton user={session?.user}/> :  (
+                  {/* @ts-ignore */}
+          {user ? <UserButton user={user}/> :  (
                         <User />
                     )}
                 </div>

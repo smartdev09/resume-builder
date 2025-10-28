@@ -1,69 +1,104 @@
-'use client';
+"use client";
+import React, { useState } from "react";
+import { login, signup } from "./actions";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
-import { getProviders, signIn } from 'next-auth/react';
+// ⬆ Replace with your actual server action imports
 
-type ProvidersType = Awaited<ReturnType<typeof getProviders>>
+export default function AuthForm() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-export default function SignUp() {
-    const [providers, setProviders] = useState<ProvidersType | null>(null);
+  const handleLogin = async () => {
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
 
+    await login(formData);
+  };
 
-  async function initProviders() {
-    const p = await getProviders();
-    setProviders(p);
-  }
+  const handleSignup = async () => {
+    const formData = new FormData();
+    formData.append("email", email);
+    formData.append("password", password);
 
-  useEffect(() => {
-    initProviders();
-  }, []);
-
+    await signup(formData);
+  };
 
   return (
-    <div className="min-h-screen bg-purple-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-3xl shadow-xl p-8 w-full max-w-md">
-        <div className="flex justify-center mb-6">
-          <div className="w-12 h-12 bg-purple-500 rounded-xl flex items-center justify-center">
-            <span className="text-white text-2xl font-bold">S</span>
-          </div>
-        </div>
-        <h1 className="text-3xl font-bold text-center mb-2">Welcome Back!</h1>
-        <p className="text-gray-500 text-center mb-8">
-          Glad to see you again!
-        </p>
-        {providers && Object.values(providers).map((provider) => (
-        <div key={provider.name}>
-            <button type="button" onClick={() => signIn(provider.id)}>
-            Sign in with
-            {provider.name}
-            </button>
-        </div>
-        ))}
-        <p className="text-center text-sm text-gray-500 mt-4">
-          By signing in, I agree to the
-          <Link
-            href="/privacy-policy"
-            className="text-purple-500 hover:underline"
-          >
-            Privacy Policy
-          </Link>
-          and
-          <Link href="/terms" className="text-purple-500 hover:underline">
-            Terms and Conditions
-          </Link>
-        </p>
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Don&apos;t have an account?
-          <Link
-            href="/sign-up"
-            className="text-purple-500 font-semibold hover:underline"
-          >
-            Sign up
-          </Link>
-        </p>
+    <div className="min-h-screen bg-gray-50">
+ 
 
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-6 py-16">
+        {/* Hero Section */}
+        <div className="text-center mb-12">
+          <h1 className="text-5xl font-bold text-gray-900 mb-6 leading-tight">
+            Build your professional<br />
+            resume in minutes.
+          </h1>
+          <p className="text-lg text-gray-600 max-w-md mx-auto mb-12">
+            If a sheet of paper represents your entire work life, 
+            personality, and skills, it better be a pretty amazing piece of 
+            paper — Let us do the heavy lifting.
+          </p>
+        </div>
+
+        {/* Auth Form */}
+        <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg p-8 mb-16">
+          <h2 className="text-2xl font-semibold text-gray-900 mb-6 text-center">
+            Get Started
+          </h2>
+          
+          <div className="space-y-4">
+            <div>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={handleSignup}
+                className="flex-1 bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-3 rounded-lg transition-colors"
+              >
+                SIGN UP
+              </button>
+              <button
+                onClick={handleLogin}
+                className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Login
+              </button>
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500 text-center mt-4">
+            Choose from 7 templates
+          </p>
+        </div>
+
+      
+
+          {/* Testimonials */}
+          
+
+          
+        </div>
       </div>
-    </div>
+    
   );
 }

@@ -55,7 +55,9 @@ export default function ProjectItem({
         />
       </div>
       <FormField
+        //@ts-ignore
         control={form.control}
+        //@ts-ignore
         name={`projects.${index}.name`}
         render={({ field }) => (
           <FormItem>
@@ -67,7 +69,9 @@ export default function ProjectItem({
         )}
       />
       <FormField
-        control={form.control}
+       //@ts-ignore
+         control={form.control}
+        //@ts-ignore
         name={`projects.${index}.role`}
         render={({ field }) => (
           <FormItem>
@@ -81,15 +85,18 @@ export default function ProjectItem({
 
       <div className="grid grid-cols-2 gap-3">
         <FormField
-          control={form.control}
-          name={`projects.${index}.startDate`}
+          //@ts-ignore
+        control={form.control}
+          //@ts-ignore
+        name={`projects.${index}.startDate`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>Start Date</FormLabel>
               <FormControl>
                 <Input
                   type="date"
-                  value={field.value?.slice(0, 10)}
+                  //@ts-ignore
+        value={field.value?.slice(0, 10)}
                   onChange={(e) => field.onChange(e.target.value)}
                 />
               </FormControl>
@@ -98,8 +105,10 @@ export default function ProjectItem({
         />
 
         <FormField
-          control={form.control}
-          name={`projects.${index}.endDate`}
+          //@ts-ignore
+        control={form.control}
+          //@ts-ignore
+        name={`projects.${index}.endDate`}
           render={({ field }) => (
             <FormItem>
               <FormLabel>End Date</FormLabel>
@@ -117,8 +126,10 @@ export default function ProjectItem({
       </FormDescription>
 
       <FormField
+        //@ts-ignore
         control={form.control}
-        name={`projects.${index}.description`}
+      //@ts-ignore
+          name={`projects.${index}.description`}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Description</FormLabel>

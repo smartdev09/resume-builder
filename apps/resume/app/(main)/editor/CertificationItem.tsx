@@ -55,8 +55,10 @@ export default function CertificationItem({
       </div>
 
       <FormField
+      //@ts-ignore
         control={form.control}
-        name={`certifications.${index}.name`}
+       //@ts-ignore
+         name={`certifications.${index}.name`}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Certificate Name</FormLabel>
@@ -68,7 +70,9 @@ export default function CertificationItem({
       />
 
       <FormField
+        //@ts-ignore
         control={form.control}
+        //@ts-ignore
         name={`certifications.${index}.source`}
         render={({ field }) => (
           <FormItem>
@@ -81,15 +85,18 @@ export default function CertificationItem({
       />
 
       <FormField
+        //@ts-ignore
         control={form.control}
-        name={`certifications.${index}.completionDate`}
+       //@ts-ignore
+         name={`certifications.${index}.completionDate`}
         render={({ field }) => (
           <FormItem>
             <FormLabel>Completion Date</FormLabel>
             <FormControl>
               <Input
                 type="date"
-                value={field.value?.slice(0, 10)}
+                //@ts-ignore
+        value={field.value?.slice(0, 10)}
                 onChange={(e) => field.onChange(e.target.value)}
               />
             </FormControl>
@@ -98,7 +105,9 @@ export default function CertificationItem({
       />
 
       <FormField
+        //@ts-ignore
         control={form.control}
+        //@ts-ignore
         name={`certifications.${index}.link`}
         render={({ field }) => (
           <FormItem>

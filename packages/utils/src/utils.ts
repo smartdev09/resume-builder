@@ -33,14 +33,16 @@ export function mapToResumeValues(data: ResumeServerData) {
       city: data.city || undefined,
       country: data.country || undefined,
       email: data.email || undefined,
-      workExperiences: data.workExperience && data.workExperience.map((exp: any) => ({
+      workExperiences: data.workExperiences && data.workExperiences.map((exp: any) => ({
           position: exp.position || undefined,
-          company: exp.company || undefined,
-          startDate: exp.startDate ? exp.startDate.toISOString().split("T")[0] : undefined,
-          endDate: exp.endDate ? exp.endDate.toISOString().split("T")[0] : undefined,
-          description: exp.description || undefined
+          company: exp.location || undefined,
+          startDate: exp.startDate 
+          //? exp.startDate.toISOString().split("T")[0] : undefined,
+         , endDate: exp.endDate 
+         //? exp.endDate.toISOString().split("T")[0] : undefined,
+          ,description: exp.description || undefined
       })),
-      educations: data.Education && data.Education.map((edu: any) => ({
+      educations: data.educations && data.educations.map((edu: any) => ({
           degree: edu.degree || undefined,
           school: edu.school || undefined,
           startDate: edu.startDate ? edu.startDate.toISOString().split("T")[0] : undefined,
@@ -72,6 +74,7 @@ export function mapParsedResumeToReduxFormat(parsedResume: Resume): Resume {
       location: parsedResume.profile.location || "",
       url: parsedResume.profile.url || "",
       summary: parsedResume.profile.summary || ""
+    
     },
     workExperiences: parsedResume.workExperiences.map(exp => ({
       company: exp.company || "",

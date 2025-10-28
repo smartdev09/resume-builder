@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@resume/ui/card";
 import { Users, UserPlus } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@resume/ui/sonner";
+import {getUsers} from '@resume/db/user'
 
 interface User {
   id: string;
@@ -23,12 +24,11 @@ export default function UsersPage() {
   // Fetch users from API
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/admin/users');
-      if (!response.ok) {
-        throw new Error('Failed to fetch users');
-      }
-      const data = await response.json();
-      setUsers(data.users || []);
+
+  const users=await getUsers()
+console.log('users:',users)
+     //@ts-ignore
+      setUsers(users || []);
     } catch (error) {
       console.error('Error fetching users:', error);
       toast.error('Failed to load users');
@@ -77,7 +77,7 @@ export default function UsersPage() {
                 <p className="text-sm text-muted-foreground">No users found</p>
               </div>
             ) : (
-              users.map((user) => (
+             users.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-4">
                     <div className="h-10 w-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">

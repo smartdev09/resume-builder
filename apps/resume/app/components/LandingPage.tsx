@@ -3,6 +3,8 @@
 import Image from "next/image";
 import { Button } from "@resume/ui/button";
 import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ShimmerButton from "@resume/ui/shimmer-button";
 import { ArrowBigRight, ArrowRight, Linkedin, Mail, Star } from 'lucide-react';
 import Link from "next/link";
@@ -22,23 +24,33 @@ import { Label } from "@resume/ui/label";
 import { Separator } from "@resume/ui/separator";
 import { useToast } from "@resume/ui/hooks/use-toast";
 import WallOfLove from "./WallOfLove";
-
+import{supabase} from '../../../../packages/database/supabaseClient'
+//import { useRouter } from "next/router";
 interface LandingPageProps {
   initialReviews: any[];
 }
 
 export default function LandingPage({ initialReviews }: LandingPageProps) {
+
   const [messageBody, setMessageBody] = useState({
     message: '',
     email: ''
   });
-
+  const [user, setUser] = useState(null);
+  const router = useRouter();
   const { toast } = useToast();
-  const { data } = useSession();
+ 
 
-  const buildResumeUrl = data?.user ? `${process.env.DOMAIN}/editor` : `${process.env.DOMAIN}/api/auth/signin`;
-  const uploadResumeUrl = data?.user ? `${process.env.DOMAIN}/upload` : `${process.env.DOMAIN}/api/auth/signin`;
+ 
 
+const buildResumeUrl = 
+//user ? 
+ `${process.env.DOMAIN}/editor` 
+ //: `${process.env.DOMAIN}/sign-in`;
+  const uploadResumeUrl = 
+  //user ? 
+  `${process.env.DOMAIN}/upload`  
+  //:`${process.env.DOMAIN}/sign-in`;
   return (
     <main className="relative px-2 lg:px-8 min-h-screen overflow-hidden text-white">
       <div className="relative z-10 py-8 md:py-12">

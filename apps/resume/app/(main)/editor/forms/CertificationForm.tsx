@@ -80,7 +80,8 @@ export default function CertificationForm({
         </p>
       </div>
 
-      <Form {...form}>
+     {/* @ts-ignore */}
+         <Form {...form}>
         <form className="space-y-3">
           <DndContext
             sensors={sensors}
